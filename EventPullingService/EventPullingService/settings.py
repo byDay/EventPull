@@ -25,7 +25,7 @@ SECRET_KEY = 's%mnj((!i=ix_+&x+-p9^5&u8-s88xsm&2_k0ee7*!dd=0=tl2'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -75,9 +75,13 @@ WSGI_APPLICATION = 'EventPullingService.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'eventpulldb',
+        'USER': 'eventpull_user',
+        'PASSWORD': 'dalvikking',
+        'HOST': 'ec2-34-238-114-56.compute-1.amazonaws.com',
+        'PORT': '5432',
+    },
 }
 
 
