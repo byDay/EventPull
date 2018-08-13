@@ -20,12 +20,19 @@ class Venue(TimeStampedModel):
 class Event(TimeStampedModel):
 
     name = models.CharField(max_length=255, null=False, blank=False)
-    description = models.IntegerField(max_length=500, null=True, blank=True)
-    date = models.DateField(null=False)
+    description = models.CharField(max_length=500, null=True, blank=True)
+    start_date = models.DateField(null=False)
     event_start_time = models.DateTimeField(null=True)
+    end_date = models.DateField(null=False)
     event_end_time = models.DateTimeField(null=True)
     tags = JSONField(null=True)
+    is_all_day_event = models.BooleanField(null=False, default=False)
     venue = models.ForeignKey(Venue, null=False)
+    category = models.CharField(max_length=255, null=True, blank=True)
+    event_url = models.CharField(max_length=255, null=True, blank=True)
+    organizer_name = models.CharField(max_length=255, null=True, blank=True)
+    organizer_url = models.CharField(max_length=255, null=True, blank=True)
+    minimum_cost = models.FloatField(default=0.0)
 
     def __str__(self):
         return str(self.venue.name) + '-' + str(self.name) + '-' + str(self.date)

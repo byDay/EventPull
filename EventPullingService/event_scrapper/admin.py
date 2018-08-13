@@ -12,9 +12,9 @@ class VenueAdmin(admin.ModelAdmin):
 
 @admin.register(models.Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'venue' , 'description', 'date', 'event_start_time', 'event_end_time', 'tags')
-    list_filter = ('id', 'name', 'venue' , 'description', 'date', 'event_start_time', 'event_end_time', 'tags')
-    search_fields = ('id', 'name', 'venue' , 'description', 'date', 'event_start_time', 'event_end_time', 'tags')
+    list_display = ('id', 'name', 'venue' , 'description', 'start_date', 'event_start_time', 'end_date', 'event_end_time', 'tags')
+    list_filter = ('id', 'name', 'venue' , 'description', 'start_date', 'event_start_time',  'end_date', 'event_end_time', 'tags')
+    search_fields = ('id', 'name', 'venue' , 'description', 'start_date', 'event_start_time', 'end_date', 'event_end_time', 'tags')
 
 
 @admin.register(models.Config)

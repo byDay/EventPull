@@ -1,0 +1,47 @@
+[program:event-celery]
+
+command=/home/ubuntu/.virtualenvs/eventpull/bin/celery worker -A EventPullingService --loglevel=INFO
+directory=/home/ubuntu/EventService/EventPull/EventPullingService/
+user=ubuntu
+numprocs=1
+stdout_logfile=/var/log/celery/event_scrapper_worker.log
+stderr_logfile=/var/log/celery/event_scrapper_worker.log
+autostart=true
+autorestart=true
+startsecs=10
+stopwaitsecs = 600
+killasgroup=true
+priority=998
+
+
+[program:event-celery-flower]
+
+command=/home/ubuntu/.virtualenvs/eventpull/bin/celery flower worker -A EventPullingService --broker=redis://127.0.0.1:6379/0
+directory=/home/ubuntu/EventService/EventPull/EventPullingService/
+user=ubuntu
+numprocs=1
+autostart=true
+autorestart=true
+startsecs=10
+stopwaitsecs = 600
+killasgroup=true
+priority=998
+
+
+[program:event-scrapper]
+
+command=python manage.py runserver 0.0.0.0:8000
+directory=/home/ubuntu/EventService/EventPull/EventPullingService/
+user=ubuntu
+numprocs=1
+stdout_logfile=/var/log/celery/event_scrapper_service.log
+stderr_logfile=/var/log/celery/event_scrapper_service.log
+autostart=true
+autorestart=true
+startsecs=10
+stopwaitsecs = 600
+killasgroup=true
+priority=998
+
+
+celery flower -A /home/ubuntu/EventService/EventPull/EventPullingService/ --broker=redis://127.0.0.1:6379/0
