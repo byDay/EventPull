@@ -12,7 +12,7 @@ class Venue(TimeStampedModel):
 	url_config = JSONField(null=False)
 	scraping_config = JSONField(null=False)
 	is_active = models.BooleanField(default=True)
-	venue_metadata = JSONField(null=True)
+	venue_metadata = JSONField(null=True, blank=True)
 
 	def __str__(self):
 		return str(self.name)
@@ -27,7 +27,7 @@ class Event(TimeStampedModel):
 	event_start_time = models.DateTimeField(null=True)
 	end_date = models.DateField(null=False)
 	event_end_time = models.DateTimeField(null=True)
-	tags = JSONField(null=True)
+	tags = JSONField(null=True, blank=True)
 	is_all_day_event = models.BooleanField(null=False, default=False)
 	venue = models.ForeignKey(Venue, null=False)
 	category = models.CharField(max_length=255, null=True, blank=True)
@@ -35,10 +35,10 @@ class Event(TimeStampedModel):
 	organizer_name = models.CharField(max_length=255, null=True, blank=True)
 	organizer_url = models.CharField(max_length=255, null=True, blank=True)
 	minimum_cost = models.FloatField(default=0.0)
-	event_metadata = JSONField(null=True)
+	event_metadata = JSONField(null=True, blank=True)
 
 	def __str__(self):
-		return str(self.venue.name) + '-' + str(self.name) + '-' + str(self.date)
+		return str(self.venue.name) + '-' + str(self.name) + '-' + str(self.start_date)
 
 
 class Config(TimeStampedModel):
@@ -59,4 +59,4 @@ class ScrapingEventLogs(TimeStampedModel):
 	venue = models.ForeignKey(Venue, null=False)
 	start_time = models.DateTimeField(null=True)
 	end_time = models.DateTimeField(null=True)
-	description = JSONField(null=True)
+	description = JSONField(null=True, blank=True)

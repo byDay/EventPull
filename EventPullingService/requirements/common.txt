@@ -22,3 +22,5 @@ lxml
 Twisted==14.0
 Scrapy
 flower
+django-celery
+django-import-export

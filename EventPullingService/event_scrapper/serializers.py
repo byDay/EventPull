@@ -6,5 +6,5 @@ class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Event
         fields = ('id', 'name','event_id','description','start_date','event_start_time',
-                    'end_date','event_end_time','tags','is_all_day_event','venue','category','event_ur','organizer_nam',
-                                        'organizer_ur','minimum_cos','event_metadata')
+                    'end_date','event_end_time','tags','is_all_day_event','venue','category','event_url','organizer_name',
+                                        'organizer_url','minimum_cost','event_metadata')
