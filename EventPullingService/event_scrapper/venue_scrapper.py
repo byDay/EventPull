@@ -1,7 +1,6 @@
 import requests
 import datetime
 from bs4 import BeautifulSoup
-from event_scrapper import models
 
 class VenueScrapper(object):
 
