@@ -1,6 +1,22 @@
 [program:event-celery]
 
-command=/home/ubuntu/.virtualenvs/eventpull/bin/celery worker -A EventPullingService --loglevel=INFO
+command=/home/ubuntu/.virtualenvs/eventpull/bin/celery worker -A EventPullingService --concurrency=4 --loglevel=INFO
+directory=/home/ubuntu/EventService/EventPull/EventPullingService/
+user=ubuntu
+numprocs=1
+stdout_logfile=/var/log/celery/event_scrapper_worker.log
+stderr_logfile=/var/log/celery/event_scrapper_worker.log
+autostart=true
+autorestart=true
+startsecs=10
+stopwaitsecs = 600
+killasgroup=true
+priority=998
+_____________________________________________________________________________________________________________________________________________
+
+[program:event-celery-beat]
+
+command=/home/ubuntu/.virtualenvs/eventpull/bin/celery beat -A EventPullingService --concurrency=4 --loglevel=INFO
 directory=/home/ubuntu/EventService/EventPull/EventPullingService/
 user=ubuntu
 numprocs=1
@@ -13,6 +29,7 @@ stopwaitsecs = 600
 killasgroup=true
 priority=998
 
+_____________________________________________________________________________________________________________________________________________
 
 [program:event-celery-flower]
 
@@ -25,8 +42,9 @@ autorestart=true
 startsecs=10
 stopwaitsecs = 600
 killasgroup=true
-priority=998
+priority=999
 
+_____________________________________________________________________________________________________________________________________________
 
 [program:event-scrapper]
 
