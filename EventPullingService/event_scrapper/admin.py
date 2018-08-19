@@ -1,4 +1,5 @@
 import csv
+import datetime
 from django import forms
 from django.contrib import admin
 from event_scrapper import models
@@ -44,10 +45,20 @@ class VenueAdmin(ImportExportModelAdmin):
 
 @admin.register(models.Event)
 class EventAdmin(ImportExportModelAdmin):
-    list_display = ('name', 'venue', 'start_date', 'event_start_time', 'end_date', 'event_end_time', 'tags', 'minimum_cost', 'category')
+    list_display = ('name', 'venue', 'start_date', 'start_time', 'end_date', 'end_time', 'tags', 'minimum_cost', 'category')
     list_filter = ('name', 'venue', 'start_date', 'event_start_time',  'end_date', 'event_end_time', 'tags', 'category')
     search_fields = ('name', 'venue', 'start_date', 'event_start_time', 'end_date', 'event_end_time', 'tags', 'category')
     actions = ['download_as_csv']
+
+    def start_time(self, obj):
+        if obj.event_start_time:
+            return obj.event_start_time.strftime('%I:%M %p')
+        return None
+
+    def end_time(self, obj):
+        if obj.event_end_time:
+            return obj.event_end_time.strftime('%I:%M %p')
+        return None
     
     def download_as_csv(self, request, queryset):
         csv_file = open('event.csv', 'wb')

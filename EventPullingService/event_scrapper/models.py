@@ -22,7 +22,7 @@ class Event(TimeStampedModel):
 
 	name = models.CharField(max_length=255, null=False, blank=False)
 	event_id = models.CharField(max_length=255, null=True, blank=True)
-	description = models.CharField(max_length=5000, null=True, blank=True)
+	description = models.CharField(max_length=10000, null=True, blank=True)
 	start_date = models.DateField(null=False)
 	event_start_time = models.DateTimeField(null=True)
 	end_date = models.DateField(null=False)

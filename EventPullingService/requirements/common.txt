@@ -1,6 +1,6 @@
 Django==1.11
 django-cors-headers==2.0.2
-djangorestframework==3.2.3
+djangorestframework
 requests==2.9.1
 django-model-utils
 django-redis==4.2.0
