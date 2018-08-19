@@ -156,7 +156,7 @@ class VenueScrapper(object):
 				main_content_tag = self.get_main_content_parent_tag(scrap_url)
 				event_content_tags = self.get_event_content_tags(main_content_tag)
 				event_objs = EventScrapper(self.venue, 'HTML', event_content_tags).get_all_event_object()
-				event_obj_list.append(event_objs)
+				event_obj_list = event_obj_list + event_objs
 		return event_obj_list
 
 
@@ -171,7 +171,7 @@ class EventScrapper(object):
 			'Connection': 'keep-alive'
 		}
 
-	event_attributes = ['name','event_id','description','start_date','event_start_time ','end_date','event_end_time','tags','is_all_day_event','venue','category','event_url','organizer_name','organizer_url','minimum_cost','event_metadata']
+	event_attributes = ['name','event_id','description','start_date','event_start_time ','end_date','event_end_time','tags','is_all_day_event','venue','category','event_url','organizer_name','organizer_url','minimum_cost']
 
 	def __init__(self, venue, event_scrap_type, event_contents):
 		self.venue = venue
@@ -179,6 +179,9 @@ class EventScrapper(object):
 		self.event_soup_object_map = {}
 		self.scraping_config = venue.scraping_config
 		self.event_contents = event_contents
+
+	def get_ascii_string(self, string):
+		return ''.join([i if ord(i) < 128 else ' ' for i in string])
 
 	def get_event_soup_object(self, event_scrap_url):
 		if event_scrap_url in self.event_soup_object_map:
@@ -210,8 +213,47 @@ class EventScrapper(object):
 	def get_event_scrap_url_from_json_object(self, json_object):
 		return None
 
-	def get_event_attribute_data(self, attribute_name):
-		event_soup_object = self.get_event_soup_object()
+	def get_event_attribute_scrap_config(self, attribute_name):
+		event_content_tag_config = self.scraping_config['event_content_tag']
+		return event_content_tag_config.get(attribute_name, {})
+
+	def get_formatted_date(self, date_string, in_format, out_format):
+		date_object = datetime.datetime.strptime(date_string, in_format)
+		formated_value = date_object.strftime(out_format)
+		return formated_value
+
+	def get_event_attribute_data(self, attribute_name, event_soup_object):
+		attribute_scraping_config = self.get_event_attribute_scrap_config(attribute_name)
+		if attribute_scraping_config and len(attribute_scraping_config.keys()) > 0:
+			filter_attributes = {}
+
+			if 'inherit_from' in attribute_scraping_config:
+				inherited_data_value = self.get_event_attribute_data(attribute_scraping_config['inherit_from'], event_soup_object)
+				#TODO : Format Value using 'in_format' and 'out_format'
+				return inherited_data_value
+
+			for attr in attribute_scraping_config['attribute']:
+				if 'is_regex' in attr:
+					for key, value in attr.iteritems():
+						if key != 'is_regex':
+							filter_attributes[key] = re.compile(value)
+				else:
+					for key, value in attr.iteritems():
+						filter_attributes[key] = value
+			event_attr_tag = event_soup_object.find(attribute_scraping_config['tag'], attrs=filter_attributes)
+			event_attr_value = ''
+			if event_attr_tag:
+				if 'tag_property' in attribute_scraping_config and attribute_scraping_config['tag_property']:
+					#TODO : Format Value using 'in_format' and 'out_format'
+					event_attr_value = getattr(event_attr_tag, attribute_scraping_config['tag_property'])
+					if 'type' in attribute_scraping_config and attribute_scraping_config['type'] == 'date':
+						event_attr_value = self.get_formatted_date(event_attr_value, attribute_scraping_config['in_format'], attribute_scraping_config['out_format'])
+				if 'tag_key' in attribute_scraping_config and attribute_scraping_config['tag_key']:
+					event_attr_value = event_attr_tag[attribute_scraping_config['tag_key']]
+					if 'type' in attribute_scraping_config and attribute_scraping_config['type'] == 'date':
+						event_attr_value = self.get_formatted_date(event_attr_value, attribute_scraping_config['in_format'], attribute_scraping_config['out_format'])
+			event_attr_value = self.get_ascii_string(event_attr_value)
+			return event_attr_value
 		return None
 
 	def get_all_event_object(self):
@@ -230,7 +272,11 @@ class EventScrapper(object):
 				scrap_url = self.get_event_scrap_url_from_tag_object(event)
 				current_event_soup_object = self.get_event_soup_object(scrap_url)
 				for attribute in self.event_attributes:
-					event_object[attribute] = self.get_event_attribute_data(attribute)
-					event_obj_list.append(event_object)
+					event_object[attribute] = self.get_event_attribute_data(attribute, current_event_soup_object)
+				event_object['venue'] = self.venue.id
+				event_object['start_date'] = '2018-08-10'
+				event_object['end_date'] = '2018-08-10'
+				event_object['event_metadata'] = {'test': 'test'} 
+				event_obj_list.append(event_object)
 		
 		return event_obj_list

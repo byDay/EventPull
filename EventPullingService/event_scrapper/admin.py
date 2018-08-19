@@ -44,9 +44,9 @@ class VenueAdmin(ImportExportModelAdmin):
 
 @admin.register(models.Event)
 class EventAdmin(ImportExportModelAdmin):
-    list_display = ('id', 'name', 'venue' , 'description', 'start_date', 'event_start_time', 'end_date', 'event_end_time', 'tags')
-    list_filter = ('id', 'name', 'venue' , 'description', 'start_date', 'event_start_time',  'end_date', 'event_end_time', 'tags')
-    search_fields = ('id', 'name', 'venue' , 'description', 'start_date', 'event_start_time', 'end_date', 'event_end_time', 'tags')
+    list_display = ('name', 'venue', 'start_date', 'event_start_time', 'end_date', 'event_end_time', 'tags', 'minimum_cost', 'category')
+    list_filter = ('name', 'venue', 'start_date', 'event_start_time',  'end_date', 'event_end_time', 'tags', 'category')
+    search_fields = ('name', 'venue', 'start_date', 'event_start_time', 'end_date', 'event_end_time', 'tags', 'category')
     actions = ['download_as_csv']
     
     def download_as_csv(self, request, queryset):
