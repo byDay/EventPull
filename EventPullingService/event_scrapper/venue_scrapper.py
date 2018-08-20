@@ -1,6 +1,8 @@
 import re
 import requests
+import calendar
 import datetime
+import dryscrape
 from bs4 import BeautifulSoup
 
 class VenueScrapper(object):
@@ -51,6 +53,8 @@ class VenueScrapper(object):
 	def get_current_month_scrapping_url(self):
 		urls = []
 		today_date = datetime.datetime.today().date()
+		month_start_date = today_date.replace(day=1)
+		month_end_date = today_date.replace(day=calendar.monthrange(today_date.year, today_date.month)[1])
 		venue_url = self.url_config['venue_url']
 		ext_params, url_params = None, None
 		if self.url_config and 'ext_params' in self.url_config:
@@ -80,10 +84,19 @@ class VenueScrapper(object):
 			for key, value in ext_params.iteritems():
 				if 'type' in value:
 					param_value = ''
+					if value['type'] == 'bool':
+						param_value = str(key) + '=' + str(value['value'])
+					if value['type'] == 'string':
+						param_value = str(key) + '=' + str(value['value'])
 					if value['type'] == 'int':
 						param_value = str(key) + '=' + str(value['value'])
 					if value['type'] == 'date' and 'format' in value:
-						formated_value = today_date.strftime(value['format'])
+						selected_date = today_date
+						if 'range' in value and value['range'] == 'max':
+							selected_date = month_end_date
+						if 'range' in value and value['range'] == 'min':
+							selected_date = month_start_date
+						formated_value = selected_date.strftime(value['format'])
 						param_value = key + '=' + str(formated_value)
 					if value['type'] == 'range':
 						param_value = str(key) + '=' + '{range_value}'
@@ -102,13 +115,23 @@ class VenueScrapper(object):
 		return urls
 
 	def get_venue_soup_object(self, scrap_url):
-		url_response = requests.get(scrap_url, headers=self.HEADERS)
-		self.venue_soup_obj = BeautifulSoup(url_response.text, 'html.parser')
+		dryscrape.start_xvfb()
+		session = dryscrape.Session()
+		session.visit(scrap_url)
+		response = session.body()
+		self.venue_soup_obj = BeautifulSoup(response)
 		return self.venue_soup_obj
 
 	def get_event_objects_from_api(self, scrap_url):
+		api_data_config = self.url_config
 		url_response = requests.get(scrap_url, headers=self.HEADERS)
-		return url_response.json()
+		response_dict = url_response.json()
+		if 'key' in api_data_config:
+			key = api_data_config['key']
+			all_keys_hieracrhy = key.split(':')
+			for k in all_keys_hieracrhy:
+				response_dict = response_dict[k]
+		return response_dict
 
 	def get_main_content_parent_tag(self, scrap_url):
 		venue_soup_obj = self.get_venue_soup_object(scrap_url)
@@ -193,9 +216,11 @@ class EventScrapper(object):
 		if event_scrap_url in self.event_soup_object_map:
 			return self.event_soup_object_map[event_scrap_url]
 		else:
-			url_response = requests.get(event_scrap_url, headers=self.HEADERS)
-			event_soup_object = BeautifulSoup(url_response.text, 'html.parser')
-			self.event_soup_object_map[event_scrap_url] = event_soup_object
+			dryscrape.start_xvfb()
+			session = dryscrape.Session()
+			session.visit(event_scrap_url)
+			response = session.body()
+			event_soup_object = BeautifulSoup(response)
 			return event_soup_object
 
 	def get_event_scrap_url_from_tag_object(self, event_tag):
@@ -227,25 +252,50 @@ class EventScrapper(object):
 
 	def get_formatted_date(self, date_string, in_format, out_format):
 		try:
-			date_object = datetime.datetime.strptime(date_string, in_format)
-			#Set Current Year
-			date_object = date_object.replace(year=datetime.datetime.today().date().year)
-			formated_value = date_object.strftime(out_format)
-			return formated_value
+			if type(in_format) == list:
+				for i_format in in_format:
+					try:
+						date_object = datetime.datetime.strptime(date_string, i_format)
+						#Set Current Year
+						date_object = date_object.replace(year=datetime.datetime.today().date().year)
+						formated_value = date_object.strftime(out_format)
+						return formated_value
+					except:
+						pass
+			else:
+				date_object = datetime.datetime.strptime(date_string, in_format)
+				#Set Current Year
+				date_object = date_object.replace(year=datetime.datetime.today().date().year)
+				formated_value = date_object.strftime(out_format)
+				return formated_value
 		except:
 			return None
+		return None
 
-	def get_event_attribute_data(self, attribute_name, event_soup_object):
+	def get_value_from_json_object(self, key_name, json_object):
+		key_list = key_name.split(':')
+		for key in key_list:
+			json_object = json_object[key]
+		return json_object
+
+	def get_event_attribute_data(self, attribute_name, event_soup_object, event_json_object=None):
 		attribute_scraping_config = self.get_event_attribute_scrap_config(attribute_name)
 		if attribute_scraping_config and len(attribute_scraping_config.keys()) > 0:
 			filter_attributes = {}
 
 			#Inherit Attribute
 			if 'inherit_from' in attribute_scraping_config:
-				inherited_data_value = self.get_event_attribute_data(attribute_scraping_config['inherit_from'], event_soup_object)
+				inherited_data_value = self.get_event_attribute_data(attribute_scraping_config['inherit_from'], event_soup_object, event_json_object=event_json_object)
 				if 'type' in attribute_scraping_config and attribute_scraping_config['type'] == 'date':
 					inherited_data_value = self.get_formatted_date(inherited_data_value, attribute_scraping_config['in_format'], attribute_scraping_config['out_format'])
 					return inherited_data_value
+
+			#Json Based Object
+			if event_json_object and 'is_json_based' in attribute_scraping_config:
+				value_from_json_object = self.get_value_from_json_object(attribute_scraping_config['key'], event_json_object)
+				if 'type' in attribute_scraping_config and attribute_scraping_config['type'] == 'date':
+					value_from_json_object = self.get_formatted_date(value_from_json_object, attribute_scraping_config['in_format'], attribute_scraping_config['out_format'])
+				return value_from_json_object
 
 			#Attribute Filter
 			for attr in attribute_scraping_config['attribute']:
@@ -291,7 +341,7 @@ class EventScrapper(object):
 				scrap_url = self.get_event_scrap_url_from_json_object(event)
 				current_event_soup_object = self.get_event_soup_object(scrap_url)
 				for attribute in self.event_attributes:
-					event_object[attribute] = self.get_event_attribute_data(attribute, current_event_soup_object)
+					event_object[attribute] = self.get_event_attribute_data(attribute, current_event_soup_object, event_json_object=event)
 				event_object['venue'] = self.venue.id
 				event_object['event_url'] = scrap_url
 				event_obj_list.append(event_object)
