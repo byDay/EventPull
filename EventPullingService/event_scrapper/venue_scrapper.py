@@ -1,9 +1,13 @@
 import re
+import sys
 import requests
 import calendar
 import datetime
 import dryscrape
 from bs4 import BeautifulSoup
+
+if 'linux' in sys.platform:
+    dryscrape.start_xvfb()
 
 class VenueScrapper(object):
 
@@ -47,12 +51,53 @@ class VenueScrapper(object):
 		else:
 			return False
 
+	def add_one_month(self, t):
+	    """Return a `datetime.date` or `datetime.datetime` (as given) that is
+	    one month earlier.
+	    
+	    Note that the resultant day of the month might change if the following
+	    month has fewer days:
+	    
+	        >>> add_one_month(datetime.date(2010, 1, 31))
+	        datetime.date(2010, 2, 28)
+	    """
+	    import datetime
+	    one_day = datetime.timedelta(days=1)
+	    one_month_later = t + one_day
+	    while one_month_later.month == t.month:  # advance to start of next month
+	        one_month_later += one_day
+	    target_month = one_month_later.month
+	    while one_month_later.day < t.day:  # advance to appropriate day
+	        one_month_later += one_day
+	        if one_month_later.month != target_month:  # gone too far
+	            one_month_later -= one_day
+	            break
+	    return one_month_later
+
+	def subtract_one_month(self, t):
+	    """Return a `datetime.date` or `datetime.datetime` (as given) that is
+	    one month later.
+	    
+	    Note that the resultant day of the month might change if the following
+	    month has fewer days:
+	    
+	        >>> subtract_one_month(datetime.date(2010, 3, 31))
+	        datetime.date(2010, 2, 28)
+	    """
+	    import datetime
+	    one_day = datetime.timedelta(days=1)
+	    one_month_earlier = t - one_day
+	    while one_month_earlier.month == t.month or one_month_earlier.day > t.day:
+	        one_month_earlier -= one_day
+	    return one_month_earlier
+
 	#This may return mutiple URL's if Venue Website is Paginated based
 	#If Paginated Website then Scrape all Url
 	#Retrur : [<list of url's>]
 	def get_current_month_scrapping_url(self):
 		urls = []
 		today_date = datetime.datetime.today().date()
+		today_date = self.add_one_month(today_date)
 		month_start_date = today_date.replace(day=1)
 		month_end_date = today_date.replace(day=calendar.monthrange(today_date.year, today_date.month)[1])
 		venue_url = self.url_config['venue_url']
@@ -115,11 +160,9 @@ class VenueScrapper(object):
 		return urls
 
 	def get_venue_soup_object(self, scrap_url):
-		dryscrape.start_xvfb()
-		session = dryscrape.Session()
-		session.visit(scrap_url)
-		response = session.body()
-		self.venue_soup_obj = BeautifulSoup(response)
+		req = requests.post(scrap_url, headers=self.HEADERS)
+		response = req.text
+		self.venue_soup_obj = BeautifulSoup(response, 'html.parser')
 		return self.venue_soup_obj
 
 	def get_event_objects_from_api(self, scrap_url):
@@ -202,6 +245,7 @@ class EventScrapper(object):
 
 	def __init__(self, venue, event_scrap_type, event_contents):
 		self.venue = venue
+		self.session = None
 		self.event_scrap_type = event_scrap_type
 		self.event_soup_object_map = {}
 		self.scraping_config = venue.scraping_config
@@ -212,16 +256,31 @@ class EventScrapper(object):
 			return ''.join([i if ord(i) < 128 else ' ' for i in string])
 		return None
 
-	def get_event_soup_object(self, event_scrap_url):
-		if event_scrap_url in self.event_soup_object_map:
-			return self.event_soup_object_map[event_scrap_url]
+	def get_dryscape_session(self):
+		if self.session:
+			self.session.reset()
+			return self.session
 		else:
-			dryscrape.start_xvfb()
-			session = dryscrape.Session()
-			session.visit(event_scrap_url)
-			response = session.body()
-			event_soup_object = BeautifulSoup(response)
-			return event_soup_object
+			self.session = dryscrape.Session()
+			return self.session
+
+	def get_event_soup_object(self, event_scrap_url):
+		try:
+			if event_scrap_url in self.event_soup_object_map:
+				return self.event_soup_object_map[event_scrap_url]
+			else:
+				req = requests.post(event_scrap_url, headers=self.HEADERS, timeout=5)
+				response = req.text
+				if response and len(response) > 0:
+					response = req.text
+				else:
+					session = self.get_dryscape_session()
+					session.visit(event_scrap_url)
+					response = session.body()
+				event_soup_object = BeautifulSoup(response, 'html.parser')
+				return event_soup_object
+		except:
+			pass
 
 	def get_event_scrap_url_from_tag_object(self, event_tag):
 		event_content_tag_config = self.scraping_config['event_content_tag']

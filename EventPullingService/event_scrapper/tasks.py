@@ -13,12 +13,13 @@ from event_scrapper.serializers import EventSerializer
 from event_scrapper.venue_scrapper import VenueScrapper
 
 #Monthly Cron
-#@celery.decorators.periodic_task(run_every=crontab(minute='1'))
+@celery.decorators.periodic_task(run_every=crontab(day_of_month='1', hour=12, minute=00))
 def trigger_scrapping_cron():
 	all_venues = models.Venue.objects.filter(is_active=True)
 	for venue in all_venues:
 		process_venue_scrapping(venue)
 
+@shared_task
 def process_venue_scrapping(venue):
 	log = models.ScrapingEventLogs.objects.create(venue=venue, status=0, start_time=datetime.datetime.today())
 	error_message = {}

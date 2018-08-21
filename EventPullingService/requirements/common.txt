@@ -24,3 +24,4 @@ Scrapy
 flower
 django-celery
 django-import-export
+dryscrape
