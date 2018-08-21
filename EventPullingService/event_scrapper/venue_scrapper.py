@@ -4,6 +4,8 @@ import requests
 import calendar
 import datetime
 import dryscrape
+from summa import keywords
+from summa import summarizer
 from bs4 import BeautifulSoup
 
 if 'linux' in sys.platform:
@@ -392,6 +394,21 @@ class EventScrapper(object):
 			return event_attr_value
 		return None
 
+	def get_tags(self, event_object):
+		description = event_object['description']
+		if not description:
+			description = ''
+		tags = keywords.keywords(event_object['description'])
+		tags = ', '.join([str(x) for x in tags.split('\n')])
+		return {'tags' : tags}
+
+	def get_summarize(self, event_object):
+		description = event_object['description']
+		if not description:
+			description = ''
+		summary = summarizer.summarize(description)
+		return {'summary' : summary}
+
 	def get_all_event_object(self):
 		event_obj_list = []
 		if self.event_scrap_type == 'API':
@@ -403,6 +420,8 @@ class EventScrapper(object):
 					event_object[attribute] = self.get_event_attribute_data(attribute, current_event_soup_object, event_json_object=event)
 				event_object['venue'] = self.venue.id
 				event_object['event_url'] = scrap_url
+				event_object['event_metadata'] = self.get_summarize(event_object)
+				event_object['tags'] = self.get_tags(event_object)
 				event_obj_list.append(event_object)
 		if self.event_scrap_type == 'HTML':
 			for event in self.event_contents:
@@ -413,6 +432,8 @@ class EventScrapper(object):
 					event_object[attribute] = self.get_event_attribute_data(attribute, current_event_soup_object)
 				event_object['venue'] = self.venue.id
 				event_object['event_url'] = scrap_url
+				event_object['event_metadata'] = self.get_summarize(event_object)
+				event_object['tags'] = self.get_tags(event_object)
 				event_obj_list.append(event_object)
 		
 		return event_obj_list

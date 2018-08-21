@@ -25,3 +25,5 @@ flower
 django-celery
 django-import-export
 dryscrape
+summarizer
+summa

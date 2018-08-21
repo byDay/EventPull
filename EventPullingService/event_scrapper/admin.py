@@ -7,13 +7,14 @@ from django.contrib import messages
 from django.http import HttpResponse
 from django.core.exceptions import ValidationError
 from import_export.admin import ImportExportModelAdmin
+from event_scrapper.tasks import process_venue_scrapping
 
 @admin.register(models.Venue)
 class VenueAdmin(ImportExportModelAdmin):
     list_display = ('id', 'name', 'is_active')
     list_filter = ('id', 'name', 'is_active')
     search_fields = ('id', 'name', 'is_active')
-    actions = ['download_as_csv', 'trigger_selected_venue_scrapping_current_month', 'trigger_selected_venue_scrapping_next_month']
+    actions = ['download_as_csv', 'trigger_selected_venue_scrapping_next_month']
     
     def download_as_csv(self, request, queryset):
         csv_file = open('venue.csv', 'wb')
@@ -32,21 +33,21 @@ class VenueAdmin(ImportExportModelAdmin):
         messages.info(request, "Venue file download comlplete.")
         return None
 
-    def trigger_selected_venue_scrapping_current_month(self, request, queryset):
-        return None
-
     def trigger_selected_venue_scrapping_next_month(self, request, queryset):
+        for venue in queryset:
+            process_venue_scrapping.delay(venue.id)
+        messages.info(request, "Venue Scrapping started. Please check Event Log for more info.")
+        return None
         return None
 
     download_as_csv.short_description = 'Download all venue information as CSV file.'
-    trigger_selected_venue_scrapping_current_month.short_description = 'Scrape Data for selected venue for Current Month.'
     trigger_selected_venue_scrapping_next_month.short_description = 'Scrape Data for selected venue for Next Month.'
 
 
 @admin.register(models.Event)
 class EventAdmin(ImportExportModelAdmin):
-    list_display = ('name', 'venue', 'start_date', 'start_time', 'end_date', 'end_time', 'tags', 'minimum_cost', 'category')
-    list_filter = ('name', 'venue', 'start_date', 'event_start_time',  'end_date', 'event_end_time', 'tags', 'category')
+    list_display = ('name', 'venue', 'start_date', 'start_time', 'end_date', 'end_time', 'event_tag', 'minimum_cost', 'category', 'summary', 'description')
+    list_filter = ('venue', 'start_date', 'event_start_time',  'end_date', 'event_end_time', 'tags', 'category')
     search_fields = ('name', 'venue', 'start_date', 'event_start_time', 'end_date', 'event_end_time', 'tags', 'category')
     actions = ['download_as_csv']
 
@@ -59,6 +60,16 @@ class EventAdmin(ImportExportModelAdmin):
         if obj.event_end_time:
             return obj.event_end_time.strftime('%I:%M %p')
         return None
+
+    def summary(self, obj):
+        if obj and obj.event_metadata:
+            return obj.event_metadata['summary']
+        return '-'
+
+    def event_tag(self, obj):
+        if obj and obj.tags:
+            return obj.tags['tags']
+        return '-'
     
     def download_as_csv(self, request, queryset):
         csv_file = open('event.csv', 'wb')

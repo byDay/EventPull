@@ -17,10 +17,11 @@ from event_scrapper.venue_scrapper import VenueScrapper
 def trigger_scrapping_cron():
 	all_venues = models.Venue.objects.filter(is_active=True)
 	for venue in all_venues:
-		process_venue_scrapping(venue)
+		process_venue_scrapping(venue.id)
 
 @shared_task
-def process_venue_scrapping(venue):
+def process_venue_scrapping(venue_id):
+	venue = models.Venue.objects.get(id=venue_id)
 	log = models.ScrapingEventLogs.objects.create(venue=venue, status=0, start_time=datetime.datetime.today())
 	error_message = {}
 	
