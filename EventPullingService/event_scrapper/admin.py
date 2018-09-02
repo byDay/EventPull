@@ -109,3 +109,7 @@ class ScrapingEventLogsAdmin(admin.ModelAdmin):
 
     download_logs_as_csv.short_description = 'Download event scraping event information as CSV file.'
 
+
+admin.site.register(models.AtlByDayVenue)
+admin.site.register(models.AtlByDayOrganizer)
+admin.site.register(models.AtlByDayEvent)

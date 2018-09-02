@@ -62,4 +62,20 @@ killasgroup=true
 priority=998
 
 
+[program:event-scrapper]
+
+command=/home/ubuntu/.local/bin/gunicorn --bind 0.0.0.0:8000 --workers 3 unix:/home/ubuntu/EventService/EventPull/EventPullingService/EventPullingService.sock EventPullingService.wsgi:application
+directory=/home/ubuntu/EventService/EventPull/EventPullingService/
+user=ubuntu
+numprocs=1
+stdout_logfile=/var/log/celery/event_scrapper_service.log
+stderr_logfile=/var/log/celery/event_scrapper_service.log
+autostart=true
+autorestart=true
+startsecs=10
+stopwaitsecs = 600
+killasgroup=true
+priority=998
+
+
 celery flower -A /home/ubuntu/EventService/EventPull/EventPullingService/ --broker=redis://127.0.0.1:6379/0
