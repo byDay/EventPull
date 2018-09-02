@@ -19,6 +19,7 @@ beautifulsoup4
 selenium
 pyOpenSSL
 lxml
+vine
 Twisted==14.0
 Scrapy
 flower

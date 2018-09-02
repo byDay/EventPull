@@ -18,7 +18,7 @@ class AtlDataFetcher(object):
 		endpoint_url = self.BASE_URL + endpoint
 		try:
 			all_events = requests.get(endpoint_url, headers=self.HEADERS)
-			if all_events.stats_code == 200:
+			if all_events.status_code == 200:
 				return all_events.json()['events']
 			else:
 				return []
@@ -30,7 +30,7 @@ class AtlDataFetcher(object):
 		endpoint_url = self.BASE_URL + endpoint
 		try:
 			all_events = requests.get(endpoint_url, headers=self.HEADERS)
-			if all_events.stats_code == 200:
+			if all_events.status_code == 200:
 				return all_events.json()
 			else:
 				return {}
@@ -42,7 +42,7 @@ class AtlDataFetcher(object):
 		endpoint_url = self.BASE_URL + endpoint
 		try:
 			all_events = requests.get(endpoint_url, headers=self.HEADERS)
-			if all_events.stats_code == 200:
+			if all_events.status_code == 200:
 				return all_events.json()['venues']
 			else:
 				return []
@@ -54,7 +54,7 @@ class AtlDataFetcher(object):
 		endpoint_url = self.BASE_URL + endpoint
 		try:
 			all_venues = requests.get(endpoint_url, headers=self.HEADERS)
-			if all_venues.stats_code == 200:
+			if all_venues.status_code == 200:
 				return all_venues.json()
 			else:
 				return {}
@@ -66,7 +66,7 @@ class AtlDataFetcher(object):
 		endpoint_url = self.BASE_URL + endpoint
 		try:
 			all_events = requests.get(endpoint_url, headers=self.HEADERS)
-			if all_events.stats_code == 200:
+			if all_events.status_code == 200:
 				return all_events.json()['organizers']
 			else:
 				return []
@@ -78,7 +78,7 @@ class AtlDataFetcher(object):
 		endpoint_url = self.BASE_URL + endpoint
 		try:
 			all_organizer = requests.get(endpoint_url, headers=self.HEADERS)
-			if all_organizer.stats_code == 200:
+			if all_organizer.status_code == 200:
 				return all_organizer.json()
 			else:
 				return {}
@@ -90,7 +90,7 @@ class AtlDataFetcher(object):
 		endpoint_url = self.BASE_URL + endpoint
 		try:
 			event = requests.post(endpoint_url, data=json.dumps(event), headers=self.HEADERS)
-			if event.stats_code == 200:
+			if event.status_code == 200:
 				return event.json()
 			else:
 				return {}
@@ -102,7 +102,7 @@ class AtlDataFetcher(object):
 		endpoint_url = self.BASE_URL + endpoint
 		try:
 			organizer = requests.post(endpoint_url, data=json.dumps(event), headers=self.HEADERS)
-			if organizer.stats_code == 200:
+			if organizer.status_code == 200:
 				return organizer.json()
 			else:
 				return {}
@@ -114,7 +114,7 @@ class AtlDataFetcher(object):
 		endpoint_url = self.BASE_URL + endpoint
 		try:
 			venue = requests.post(endpoint_url, data=json.dumps(event), headers=self.HEADERS)
-			if venue.stats_code == 200:
+			if venue.status_code == 200:
 				return venue.json()
 			else:
 				return {}
