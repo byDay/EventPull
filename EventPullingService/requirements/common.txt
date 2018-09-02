@@ -27,3 +27,4 @@ django-import-export
 dryscrape
 summarizer
 summa
+pyvirtualdisplay
