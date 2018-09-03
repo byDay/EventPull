@@ -82,7 +82,7 @@ DATABASES = {
         'NAME': 'eventpulldb',
         'USER': 'eventpull_user',
         'PASSWORD': 'dalvikking',
-        'HOST': 'ec2-34-238-114-56.compute-1.amazonaws.com',
+        'HOST': '52.23.55.129',
         'PORT': '5432',
     },
 }
@@ -136,6 +136,7 @@ IMPORT_EXPORT_USE_TRANSACTIONS = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 # Celery application definition
 BROKER_URL = 'redis://127.0.0.1:6379/0'

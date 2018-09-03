@@ -56,6 +56,22 @@ def pull_data_from_atlbyday_wordpress():
 
 	atl_fetcher_obj = AtlDataFetcher()
 	atl_data_helper_obj = DataHelper()
+
+	#Fetch All Tags
+	all_tags = atl_fetcher_obj.get_all_tags()
+	tag_messages = []
+	for tag in all_tags:
+		tag_message = atl_data_helper_obj.update_or_create_tags(tag)
+		if tag_message:
+			tag_messages.append(tag_message)
+
+	#Fetch All Category
+	all_category = atl_fetcher_obj.get_all_categories()
+	category_messages = []
+	for category in all_category:
+		category_message = atl_data_helper_obj.update_or_create_category(category)
+		if category_message:
+			category_messages.append(category_message)
 	
 	#Fetch All Venues
 	all_venus = atl_fetcher_obj.get_all_venues()

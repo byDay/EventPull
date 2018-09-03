@@ -129,3 +129,17 @@ class AtlByDayEventAdmin(admin.ModelAdmin):
     list_display = ('event_id', 'title', 'start_date', 'end_date', 'cost', 'venue')
     list_filter = ('event_id', 'title', 'start_date', 'end_date', 'cost', 'venue')
     search_fields = ('event_id', 'title', 'start_date', 'end_date', 'cost', 'venue')
+
+
+@admin.register(models.AtlByDayTag)
+class AtlByDayTagAdmin(admin.ModelAdmin):
+    list_display = ('tag_id', 'name', 'slug', 'url')
+    list_filter = ('tag_id', 'name', 'slug')
+    search_fields = ('tag_id', 'name', 'slug', 'url')
+
+
+@admin.register(models.AtlByDayCategory)
+class AtlByDayCategoryAdmin(admin.ModelAdmin):
+    list_display = ('category_id', 'name', 'slug', 'url')
+    list_filter = ('category_id', 'name', 'slug')
+    search_fields = ('category_id', 'name', 'slug', 'url')

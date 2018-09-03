@@ -27,3 +27,15 @@ class AtlByDayEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.AtlByDayEvent
         fields = "__all__"
+
+class AtlByDayTagSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = models.AtlByDayTag
+        fields = "__all__"
+
+class AtlByDayCategorySerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = models.AtlByDayCategory
+        fields = "__all__"

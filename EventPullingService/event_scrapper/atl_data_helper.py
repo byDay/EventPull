@@ -78,3 +78,42 @@ class DataHelper(object):
 			return None
 		else:
 			return oragnizer_serializers.errors
+
+
+	@staticmethod
+	def update_or_create_tags(tags):
+		tags['tag_id'] = tags['id']
+		
+		#Check if Tag Already Exist
+		try:
+			tags = models.AtlByDayTag.objects.get(tag_id=tags['tag_id'])
+			return 'Tag already exist {tag_id}'.format(tag_id=tags['tag_id'])
+		except:
+			pass
+
+		#Create Category
+		tags_serializers = serializers.AtlByDayTagSerializer(data=tags)
+		if tags_serializers.is_valid():
+			tags_serializers.save()
+			return None
+		else:
+			return tags_serializers.errors
+
+	@staticmethod
+	def update_or_create_category(category):
+		category['category_id'] = category['id']
+		
+		#Check if Category Already Exist
+		try:
+			category = models.AtlByDayCategory.objects.get(category_id=category['category_id'])
+			return 'Category already exist {category_id}'.format(category_id=category['category_id'])
+		except:
+			pass
+
+		#Create Category
+		category_serializers = serializers.AtlByDayCategorySerializer(data=category)
+		if category_serializers.is_valid():
+			category_serializers.save()
+			return None
+		else:
+			return category_serializers.errors

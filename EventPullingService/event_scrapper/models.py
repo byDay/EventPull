@@ -128,3 +128,26 @@ class AtlByDayEvent(TimeStampedModel):
 
 	def __unicode__(self):
 		return str(self.title) if self.title else str(self.event_id)
+
+
+class AtlByDayTag(TimeStampedModel):
+	tag_id = models.IntegerField(null=True, blank=True)
+	description = models.CharField(max_length=10000, null=True, blank=True)
+	name = models.CharField(max_length=10000, null=True, blank=True)
+	slug = models.CharField(max_length=10000, null=True, blank=True)
+	url = models.CharField(max_length=10000, null=True, blank=True)
+	taxonomy = models.CharField(max_length=10000, null=True, blank=True)
+
+	def __unicode__(self):
+		return str(self.slug) if self.slug else str(self.tag_id)
+
+class AtlByDayCategory(TimeStampedModel):
+	category_id = models.IntegerField(null=True, blank=True)
+	description = models.CharField(max_length=10000, null=True, blank=True)
+	name = models.CharField(max_length=10000, null=True, blank=True)
+	slug = models.CharField(max_length=10000, null=True, blank=True)
+	url = models.CharField(max_length=10000, null=True, blank=True)
+	taxonomy = models.CharField(max_length=10000, null=True, blank=True)
+
+	def __unicode__(self):
+		return str(self.slug) if self.slug else str(self.category_id)
