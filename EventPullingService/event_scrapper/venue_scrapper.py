@@ -398,7 +398,7 @@ class EventScrapper(object):
 		description = event_object['description']
 		if not description:
 			description = ''
-		tags = keywords.keywords(event_object['description'])
+		tags = keywords.keywords(event_object['description'] if event_object['description'] else '')
 		tags = ', '.join([str(x) for x in tags.split('\n')])
 		return {'tags' : tags}
 
