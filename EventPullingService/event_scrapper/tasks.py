@@ -57,14 +57,6 @@ def pull_data_from_atlbyday_wordpress():
 	atl_fetcher_obj = AtlDataFetcher()
 	atl_data_helper_obj = DataHelper()
 	
-	#Fetch All Events
-	all_events = atl_fetcher_obj.get_all_events()
-	event_messages = []
-	for event in all_events:
-		event_message = atl_data_helper_obj.update_or_create_event(event)
-		if event_message:
-			event_messages.append(event_message)
-
 	#Fetch All Venues
 	all_venus = atl_fetcher_obj.get_all_venues()
 	venue_messages = []
@@ -73,13 +65,21 @@ def pull_data_from_atlbyday_wordpress():
 		if venue_message:
 			venue_messages.append(venue_message)
 
-	#Fetch All Organizers
+	# #Fetch All Organizers
 	all_orgainzer = atl_fetcher_obj.get_all_organizer()
 	organizer_messages = []
 	for organizer in all_orgainzer:
 		organizer_message = atl_data_helper_obj.update_or_create_organizer(organizer)
 		if organizer_message:
 			organizer_messages.append(organizer_message)
+
+	#Fetch All Events
+	all_events = atl_fetcher_obj.get_all_events()
+	event_messages = []
+	for event in all_events:
+		event_message = atl_data_helper_obj.update_or_create_event(event)
+		if event_message:
+			event_messages.append(event_message)
 
 	pull_data_result = {"event" : event_messages, "organizer" : organizer_messages, "venue" : venue_messages}
 	print pull_data_result

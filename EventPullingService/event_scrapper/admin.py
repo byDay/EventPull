@@ -110,6 +110,22 @@ class ScrapingEventLogsAdmin(admin.ModelAdmin):
     download_logs_as_csv.short_description = 'Download event scraping event information as CSV file.'
 
 
-admin.site.register(models.AtlByDayVenue)
-admin.site.register(models.AtlByDayOrganizer)
-admin.site.register(models.AtlByDayEvent)
+@admin.register(models.AtlByDayOrganizer)
+class AtlByDayOrganizerAdmin(admin.ModelAdmin):
+    list_display = ('organizer_id', 'organizer', 'slug', 'phone', 'url')
+    list_filter = ('organizer_id', 'organizer')
+    search_fields = ('organizer_id', 'organizer', 'slug', 'phone', 'url')    
+
+
+@admin.register(models.AtlByDayVenue)
+class AtlByDayVenueAdmin(admin.ModelAdmin):
+    list_display = ('venue_id', 'venue', 'url', 'address', 'city')
+    list_filter = ('venue_id', 'venue')
+    search_fields = ('venue_id', 'venue', 'address', 'city')
+
+
+@admin.register(models.AtlByDayEvent)
+class AtlByDayEventAdmin(admin.ModelAdmin):
+    list_display = ('event_id', 'title', 'start_date', 'end_date', 'cost', 'venue')
+    list_filter = ('event_id', 'title', 'start_date', 'end_date', 'cost', 'venue')
+    search_fields = ('event_id', 'title', 'start_date', 'end_date', 'cost', 'venue')
