@@ -1,5 +1,7 @@
 import json
 import requests
+from fuzzywuzzy import fuzz
+from fuzzywuzzy import process
 from event_scrapper import models
 from event_scrapper import serializers
 
@@ -30,17 +32,16 @@ class WPDataHelper(object):
 
 	EVENT_KEY_MAPPING = {
 						    'website' : 'event_url',
-						    'status' : None,
 						    'description' : 'description',
 						    'end_date' : 'event_end_time',
-						    'tags' : 'tags:tags',
+						    'tags' : 'tags',
 						    'cost' : 'minimum_cost',
 						    'categories' : 'category',
 						    'title' : 'name',
 						    'all_day' : 'is_all_day_event',
 						    'start_date' : 'event_start_time',
 						    'venue' : 'venue',
-						    'orgainzer' : 'orgainzer'
+						    'organizer' : 'organizer'
 						}
 
 	VENUE_KEY_MAPPING = {
@@ -50,8 +51,47 @@ class WPDataHelper(object):
 
 	@staticmethod
 	def create_wp_event(event):
-		pass
+		if event['tags'].get('tags'):
+			tags = event['tags'].get('tags').split(',')
+			event['tags'] = tags
+		
+		if event['organizer_name']:
+			organizer_json = DataHelper.get_organizer({"organizer" : event['organizer_name']})
+			if organizer_json:
+				event['organizer'] = [int(organizer_json['organizer_id'])]
+			else:
+				organizer_json = WPDataHelper.create_wp_orgainzer({"organizer" : event['organizer_name'], "website" : event['organizer_url']})
+				event['organizer'] = [int(organizer_json['id'])]
+		else:
+			event['organizer'] = None
 
+		if event['is_all_day_event'] is None:
+			event['is_all_day_event'] = False
+
+		if not event['event_end_time']:
+			event['event_end_time'] = event['end_date']
+
+		if not event['event_start_time']:
+			event['event_start_time'] = event['start_date']
+
+		event['category'] = None
+		
+		event_json = {}
+		for key, value in WPDataHelper.EVENT_KEY_MAPPING.iteritems():
+			event_json[key] = event[value]
+
+		endpoint = 'events/'
+		endpoint = WPDataHelper.BASE_URL + endpoint
+		events_request = requests.post(endpoint, headers=WPDataHelper.HEADERS, data=json.dumps(event_json))
+		if events_request.status_code == 201:
+			return events_request.json()
+		else:
+			print 'Error occured while creating WP events : {event_json}'.format(event_json=event_json)
+			return None
+
+	"""
+		category = {"name" : "Office Party"}
+	"""
 	@staticmethod
 	def create_wp_category(category):
 		endpoint = 'categories/'
@@ -63,6 +103,9 @@ class WPDataHelper(object):
 			print 'Error occured while creating WP category : {category}'.format(category=category)
 			return None
 
+	"""
+		tag = {"name" : "hangout"}
+	"""
 	@staticmethod
 	def create_wp_tag(tag):
 		endpoint = 'tags/'
@@ -74,6 +117,9 @@ class WPDataHelper(object):
 			print 'Error occured while creating WP tags : {tag}'.format(tag=tag)
 			return None
 
+	"""
+		organizer = {"organizer": "Gourmet Foods International", "website": "http://www.gfifoods.com/",}
+	"""
 	@staticmethod
 	def create_wp_orgainzer(organizer):
 		endpoint = 'organizers/'
@@ -100,10 +146,39 @@ class WPDataHelper(object):
 class DataHelper(object):
 
 	@staticmethod
+	def get_event(event):
+		pass
+
+	@staticmethod
+	def get_tag(tag):
+		pass
+
+	@staticmethod
+	def get_category(category):
+		pass
+
+	@staticmethod
+	def get_organizer(organizer):
+		all_organizers = models.AtlByDayOrganizer.objects.all()
+		all_organizers_name = map(lambda o:o.organizer, all_organizers)
+		search_name = organizer.get('organizer')
+		best_organizer_name_match = process.extractOne(search_name, all_organizers_name)
+		try:
+			if best_organizer_name_match[1] >= 90:
+				organizer_obj = models.AtlByDayOrganizer.objects.get(organizer=best_organizer_name_match[0])
+				return serializers.AtlByDayOrganizerSerializer(organizer_obj).data
+			else:
+				return None
+		except:
+			return None
+
+	@staticmethod
+	def get_venue(venue):
+		pass
+
+	@staticmethod
 	def update_or_create_event(event):
 		event['event_id'] = event['id']
-		event['organizer'] = None
-		event['venue'] = None
 		
 		try:
 			venue = models.AtlByDayVenue.objects.get(venue_id=event['venue']['id'])
@@ -118,9 +193,6 @@ class DataHelper(object):
 		except:
 			event['organizer'] = None
 		
-		event.pop('venue')
-		event.pop('organizer')
-
 		#Check if Event Already Exist
 		try:
 			event_obj = models.AtlByDayEvent.objects.get(event_id=event['event_id'])

@@ -15,6 +15,6 @@ evs.is_valid()
 
 from event_scrapper import tasks
 tasks.trigger_scrapping_cron()
-
 from event_scrapper import tasks
 tasks.pull_data_from_atlbyday_wordpress()
+tasks.process_venue_scrapping(1)

@@ -35,7 +35,7 @@ def process_venue_scrapping(venue_id):
 		for event_obj in event_obj_list:
 			serialized_event_data = EventSerializer(data=event_obj)
 			if serialized_event_data.is_valid():
-				event_obj['venue'] = venue_id
+				event_obj['venue'] = {"id" : venue.venue_metadata.get('atl_venue_id')}
 				created = WPDataHelper.create_wp_event(event_obj)
 				if created:
 					serialized_event_data.save()
