@@ -54,15 +54,36 @@ class WPDataHelper(object):
 
 	@staticmethod
 	def create_wp_category(category):
-		pass
+		endpoint = 'categories/'
+		endpoint = WPDataHelper.BASE_URL + endpoint
+		category_request = requests.post(endpoint, headers=WPDataHelper.HEADERS, data=json.dumps(category))
+		if category_request.status_code == 201:
+			return category_request.json()
+		else:
+			print 'Error occured while creating WP category : {category}'.format(category=category)
+			return None
 
 	@staticmethod
 	def create_wp_tag(tag):
-		pass
+		endpoint = 'tags/'
+		endpoint = WPDataHelper.BASE_URL + endpoint
+		tag_request = requests.post(endpoint, headers=WPDataHelper.HEADERS, data=json.dumps(tag))
+		if tag_request.status_code == 201:
+			return tag_request.json()
+		else:
+			print 'Error occured while creating WP tags : {tag}'.format(tag=tag)
+			return None
 
 	@staticmethod
 	def create_wp_orgainzer(organizer):
-		pass
+		endpoint = 'organizers/'
+		endpoint = WPDataHelper.BASE_URL + endpoint
+		organizer_request = requests.post(endpoint, headers=WPDataHelper.HEADERS, data=json.dumps(organizer))
+		if organizer_request.status_code == 201:
+			return organizer_request.json()
+		else:
+			print 'Error occured while creating WP organizer : {organizer}'.format(organizer=organizer)
+			return None
 
 	@staticmethod
 	def create_wp_venue(venue):
