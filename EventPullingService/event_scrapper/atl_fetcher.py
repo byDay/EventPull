@@ -18,7 +18,7 @@ class AtlDataFetcher(object):
 		all_events_list = []
 		try:
 			while 1:
-				endpoint = "events/" + "?page={page_no}&per_page=50"
+				endpoint = "events/" + "?page={page_no}&per_page=50&start_date=1960-09-04"
 				endpoint_url = self.BASE_URL + endpoint
 				endpoint_url = endpoint_url.format(page_no=page_no)
 				print endpoint_url

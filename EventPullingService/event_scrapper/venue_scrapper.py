@@ -339,6 +339,16 @@ class EventScrapper(object):
 			json_object = json_object[key]
 		return json_object
 
+	def clean_string_from_spaces(self, value):
+		if type(value) == str or type(value) == unicode:
+			value = value.replace("\t", "")
+			value = value.replace("\r", "")
+			value = value.replace("\n", "")
+			value = re.sub(' +',' ',value)
+			value = value.lstrip()
+			value = value.rstrip()
+		return value
+
 	def get_event_attribute_data(self, attribute_name, event_soup_object, event_json_object=None):
 		attribute_scraping_config = self.get_event_attribute_scrap_config(attribute_name)
 		if attribute_scraping_config and len(attribute_scraping_config.keys()) > 0:
@@ -391,7 +401,8 @@ class EventScrapper(object):
 					if 'type' in attribute_scraping_config and attribute_scraping_config['type'] == 'date':
 						event_attr_value = self.get_formatted_date(event_attr_value, attribute_scraping_config['in_format'], attribute_scraping_config['out_format'])
 			event_attr_value = self.get_ascii_string(event_attr_value)
-			return event_attr_value
+
+			return self.clean_string_from_spaces(event_attr_value)
 		return None
 
 	def get_tags(self, event_object):

@@ -6,27 +6,28 @@ class DataHelper(object):
 	@staticmethod
 	def update_or_create_event(event):
 		event['event_id'] = event['id']
-
+		event['organizer'] = None
+		event['venue'] = None
+		
 		try:
 			venue = models.AtlByDayVenue.objects.get(venue_id=event['venue']['id'])
-			event.pop('venue')
 			event['venue'] = venue.id
 		except:
-			event.pop('venue')
 			event['venue'] = None
 		
 		try:
 			if event['organizer'] and len(event['organizer']) > 0:
 				organizer = models.AtlByDayOrganizer.objects.get(organizer_id=event['organizer'][0]['id'])
-				event.pop('organizer')
 				event['organizer'] = organizer.id
 		except:
-			event.pop('organizer')
 			event['organizer'] = None
+		
+		event.pop('venue')
+		event.pop('organizer')
 
 		#Check if Event Already Exist
 		try:
-			event = models.AtlByDayEvent.objects.get(event_id=event['event_id'])
+			event_obj = models.AtlByDayEvent.objects.get(event_id=event['event_id'])
 			return 'Event already exist {event_id}'.format(event_id=event['event_id'])
 		except:
 			pass
@@ -37,7 +38,7 @@ class DataHelper(object):
 			event_serializers.save()
 			return None
 		else:
-			return event_serializers.errors
+			return 'EventID : {event_id}'.format(event_id=event['id']) + str(event_serializers.errors)
 
 
 	@staticmethod
@@ -46,7 +47,7 @@ class DataHelper(object):
 		
 		#Check if Venue Already Exist
 		try:
-			venue = models.AtlByDayVenue.objects.get(venue_id=venue['venue_id'])
+			venue_obj = models.AtlByDayVenue.objects.get(venue_id=venue['venue_id'])
 			return 'Venue already exist {venue_id}'.format(venue_id=venue['venue_id'])
 		except:
 			pass
@@ -57,7 +58,7 @@ class DataHelper(object):
 			venue_serializers.save()
 			return None
 		else:
-			return venue_serializers.errors
+			return 'VenueID : {venue_id}'.format(venue_id=venue['id']) + str(venue_serializers.errors)
 	
 
 	@staticmethod
@@ -66,7 +67,7 @@ class DataHelper(object):
 		
 		#Check if Organizer Already Exist
 		try:
-			oragnizer = models.AtlByDayOrganizer.objects.get(organizer_id=organizer['organizer_id'])
+			oragnizer_obj = models.AtlByDayOrganizer.objects.get(organizer_id=organizer['organizer_id'])
 			return 'Organizer already exist {organizer_id}'.format(organizer_id=organizer['organizer_id'])
 		except:
 			pass
@@ -77,7 +78,7 @@ class DataHelper(object):
 			oragnizer_serializers.save()
 			return None
 		else:
-			return oragnizer_serializers.errors
+			return 'Organizer : {organizer_id}'.format(organizer_id=organizer['id']) + str(oragnizer_serializers.errors)
 
 
 	@staticmethod
@@ -86,7 +87,7 @@ class DataHelper(object):
 		
 		#Check if Tag Already Exist
 		try:
-			tags = models.AtlByDayTag.objects.get(tag_id=tags['tag_id'])
+			tags_obj = models.AtlByDayTag.objects.get(tag_id=tags['tag_id'])
 			return 'Tag already exist {tag_id}'.format(tag_id=tags['tag_id'])
 		except:
 			pass
@@ -97,7 +98,7 @@ class DataHelper(object):
 			tags_serializers.save()
 			return None
 		else:
-			return tags_serializers.errors
+			return 'Tags : {tag_id}'.format(tag_id=tags['id']) + str(tags_serializers.errors)
 
 	@staticmethod
 	def update_or_create_category(category):
@@ -105,7 +106,7 @@ class DataHelper(object):
 		
 		#Check if Category Already Exist
 		try:
-			category = models.AtlByDayCategory.objects.get(category_id=category['category_id'])
+			category_obj = models.AtlByDayCategory.objects.get(category_id=category['category_id'])
 			return 'Category already exist {category_id}'.format(category_id=category['category_id'])
 		except:
 			pass
@@ -116,4 +117,4 @@ class DataHelper(object):
 			category_serializers.save()
 			return None
 		else:
-			return category_serializers.errors
+			return 'Category : {category_id}'.format(category_id=category['id']) + str(category_serializers.errors)

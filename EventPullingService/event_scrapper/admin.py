@@ -112,34 +112,34 @@ class ScrapingEventLogsAdmin(admin.ModelAdmin):
 
 @admin.register(models.AtlByDayOrganizer)
 class AtlByDayOrganizerAdmin(admin.ModelAdmin):
-    list_display = ('organizer_id', 'organizer', 'slug', 'phone', 'url')
-    list_filter = ('organizer_id', 'organizer')
-    search_fields = ('organizer_id', 'organizer', 'slug', 'phone', 'url')    
+    list_display = ('organizer_id', 'organizer', 'slug', 'phone', 'url', 'status')
+    list_filter = ('organizer', 'status')
+    search_fields = ('organizer_id', 'organizer', 'slug', 'phone', 'url', 'status')    
 
 
 @admin.register(models.AtlByDayVenue)
 class AtlByDayVenueAdmin(admin.ModelAdmin):
-    list_display = ('venue_id', 'venue', 'url', 'address', 'city')
-    list_filter = ('venue_id', 'venue')
-    search_fields = ('venue_id', 'venue', 'address', 'city')
+    list_display = ('venue_id', 'venue', 'url', 'address', 'city', 'status')
+    list_filter = ('status')
+    search_fields = ('venue_id', 'venue', 'address', 'city', 'status')
 
 
 @admin.register(models.AtlByDayEvent)
 class AtlByDayEventAdmin(admin.ModelAdmin):
-    list_display = ('event_id', 'title', 'start_date', 'end_date', 'cost', 'venue')
-    list_filter = ('event_id', 'title', 'start_date', 'end_date', 'cost', 'venue')
-    search_fields = ('event_id', 'title', 'start_date', 'end_date', 'cost', 'venue')
+    list_display = ('event_id', 'title', 'start_date', 'end_date', 'cost', 'venue', 'status')
+    list_filter = ('status')
+    search_fields = ('event_id', 'title', 'start_date', 'end_date', 'cost', 'venue', 'status')
 
 
 @admin.register(models.AtlByDayTag)
 class AtlByDayTagAdmin(admin.ModelAdmin):
     list_display = ('tag_id', 'name', 'slug', 'url')
-    list_filter = ('tag_id', 'name', 'slug')
+    list_filter = ('name', 'slug')
     search_fields = ('tag_id', 'name', 'slug', 'url')
 
 
 @admin.register(models.AtlByDayCategory)
 class AtlByDayCategoryAdmin(admin.ModelAdmin):
     list_display = ('category_id', 'name', 'slug', 'url')
-    list_filter = ('category_id', 'name', 'slug')
+    list_filter = ('name', 'slug')
     search_fields = ('category_id', 'name', 'slug', 'url')
