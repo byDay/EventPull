@@ -2,6 +2,8 @@ from __future__ import unicode_literals
 
 from django.db import models
 from model_utils import Choices
+from django.db.models import signals
+from django.db.models.signals import post_save
 from model_utils.models import TimeStampedModel
 from django.contrib.postgres.fields import JSONField
 
@@ -151,3 +153,19 @@ class AtlByDayCategory(TimeStampedModel):
 
 	def __unicode__(self):
 		return str(self.slug) if self.slug else str(self.category_id)
+
+
+"""
+	Post Save Signals
+"""
+def create_wp_venue(sender, instance, created, **kwargs):
+	from event_scrapper.atl_data_helper import WPDataHelper
+	if not instance.venue_metadata.get('atl_venue_id'):
+		name = instance.name
+		url = instance.venue_metadata.get('url', None)
+		venue_json = {'venue' : name, 'webiste': url}
+		atl_venue_obj = WPDataHelper.create_wp_venue(venue_json)
+		instance.venue_metadata['atl_venue_id'] = atl_venue_obj['id']
+		instance.save()
+
+signals.post_save.connect(create_wp_venue, sender=Venue)

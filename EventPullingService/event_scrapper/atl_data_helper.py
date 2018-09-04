@@ -1,5 +1,80 @@
+import json
+import requests
 from event_scrapper import models
 from event_scrapper import serializers
+
+class WPDataHelper(object):
+
+	"""
+		WP Data Creation Steps:
+			1. Check in Local DB if Data Exist.
+			2. Else create in WP and Sync
+	
+	Sample Event Create Obj Keys:
+	
+	['website', 'status', 'description', 'end_date', 'tags', 'global_id_lineage', 
+	'image', 'excerpt', 'sticky', 'cost_details', 'featured', 'cost', 'show_map_link', 
+	'global_id', 'modified', 'date', 'timezone', 'end_date_details', 'utc_start_date_details', 
+	'id', 'categories', 'slug', 'author', 'event_id', 'show_map', 'title', 'all_day', 
+	'start_date_details', 'utc_end_date', 'timezone_abbr', 'url', 'date_utc', 
+	'utc_end_date_details', 'rest_url', 'utc_start_date', 'start_date', 'modified_utc', 'hide_from_listings']
+
+	"""
+
+	BASE_URL = "https://atlbyday.com/wp-json/tribe/events/v1/"
+	TOKEN = "Basic RXZlbnRQdWxsOldRZlJycHRkTHlsa0U1dzI="
+	HEADERS = {
+		"Authorization" : TOKEN,
+		"Content-Type" : "application/json"
+	}
+
+	EVENT_KEY_MAPPING = {
+						    'website' : 'event_url',
+						    'status' : None,
+						    'description' : 'description',
+						    'end_date' : 'event_end_time',
+						    'tags' : 'tags:tags',
+						    'cost' : 'minimum_cost',
+						    'categories' : 'category',
+						    'title' : 'name',
+						    'all_day' : 'is_all_day_event',
+						    'start_date' : 'event_start_time',
+						    'venue' : 'venue',
+						    'orgainzer' : 'orgainzer'
+						}
+
+	VENUE_KEY_MAPPING = {
+							'venue' : 'name',
+							'website' : 'venue_metadata:url'
+						}
+
+	@staticmethod
+	def create_wp_event(event):
+		pass
+
+	@staticmethod
+	def create_wp_category(category):
+		pass
+
+	@staticmethod
+	def create_wp_tag(tag):
+		pass
+
+	@staticmethod
+	def create_wp_orgainzer(organizer):
+		pass
+
+	@staticmethod
+	def create_wp_venue(venue):
+		endpoint = 'venues/'
+		endpoint = WPDataHelper.BASE_URL + endpoint
+		venue_request = requests.post(endpoint, headers=WPDataHelper.HEADERS, data=json.dumps(venue))
+		if venue_request.status_code == 201:
+			return venue_request.json()
+		else:
+			print 'Error occured while creating WP Venue : {venue}'.format(venue=venue)
+			return None
+
 
 class DataHelper(object):
 

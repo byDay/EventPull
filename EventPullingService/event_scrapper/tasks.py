@@ -11,6 +11,7 @@ from celery.schedules import crontab
 from celery.decorators import task, periodic_task
 from event_scrapper.atl_fetcher import AtlDataFetcher
 from event_scrapper.atl_data_helper import DataHelper
+from event_scrapper.atl_data_helper import WPDataHelper
 from event_scrapper.serializers import EventSerializer
 from event_scrapper.venue_scrapper import VenueScrapper
 
@@ -34,7 +35,10 @@ def process_venue_scrapping(venue_id):
 		for event_obj in event_obj_list:
 			serialized_event_data = EventSerializer(data=event_obj)
 			if serialized_event_data.is_valid():
-				serialized_event_data.save()
+				event_obj['venue'] = venue_id
+				created = WPDataHelper.create_wp_event(event_obj)
+				if created:
+					serialized_event_data.save()
 				status = 1
 			else:
 				status = 2
@@ -57,41 +61,42 @@ def pull_data_from_atlbyday_wordpress():
 	atl_fetcher_obj = AtlDataFetcher()
 	atl_data_helper_obj = DataHelper()
 
-	#Fetch All Tags
-	all_tags = atl_fetcher_obj.get_all_tags()
+	category_messages = []
 	tag_messages = []
+	venue_messages = []
+	organizer_messages = []
+	event_messages = []
+
+	# #Fetch All Tags
+	all_tags = atl_fetcher_obj.get_all_tags()
 	for tag in all_tags:
 		tag_message = atl_data_helper_obj.update_or_create_tags(tag)
 		if tag_message:
 			tag_messages.append(tag_message)
 
-	#Fetch All Category
+	# #Fetch All Category
 	all_category = atl_fetcher_obj.get_all_categories()
-	category_messages = []
 	for category in all_category:
 		category_message = atl_data_helper_obj.update_or_create_category(category)
 		if category_message:
 			category_messages.append(category_message)
 	
-	#Fetch All Venues
+	# #Fetch All Venues
 	all_venus = atl_fetcher_obj.get_all_venues()
-	venue_messages = []
 	for venue in all_venus:
 		venue_message = atl_data_helper_obj.update_or_create_venue(venue)
 		if venue_message:
 			venue_messages.append(venue_message)
 
-	# #Fetch All Organizers
+	# # #Fetch All Organizers
 	all_orgainzer = atl_fetcher_obj.get_all_organizer()
-	organizer_messages = []
 	for organizer in all_orgainzer:
 		organizer_message = atl_data_helper_obj.update_or_create_organizer(organizer)
 		if organizer_message:
 			organizer_messages.append(organizer_message)
 
-	#Fetch All Events
+	# #Fetch All Events
 	all_events = atl_fetcher_obj.get_all_events()
-	event_messages = []
 	for event in all_events:
 		event_message = atl_data_helper_obj.update_or_create_event(event)
 		if event_message:
