@@ -190,6 +190,8 @@ class DataHelper(object):
 			if event['organizer'] and len(event['organizer']) > 0:
 				organizer = models.AtlByDayOrganizer.objects.get(organizer_id=event['organizer'][0]['id'])
 				event['organizer'] = organizer.id
+			else:
+				event['organizer'] = None
 		except:
 			event['organizer'] = None
 		
