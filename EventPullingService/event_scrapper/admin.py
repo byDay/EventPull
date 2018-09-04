@@ -120,14 +120,14 @@ class AtlByDayOrganizerAdmin(admin.ModelAdmin):
 @admin.register(models.AtlByDayVenue)
 class AtlByDayVenueAdmin(admin.ModelAdmin):
     list_display = ('venue_id', 'venue', 'url', 'address', 'city', 'status')
-    list_filter = ('status')
+    list_filter = ('venue', 'status')
     search_fields = ('venue_id', 'venue', 'address', 'city', 'status')
 
 
 @admin.register(models.AtlByDayEvent)
 class AtlByDayEventAdmin(admin.ModelAdmin):
     list_display = ('event_id', 'title', 'start_date', 'end_date', 'cost', 'venue', 'status')
-    list_filter = ('status')
+    list_filter = ('venue', 'status')
     search_fields = ('event_id', 'title', 'start_date', 'end_date', 'cost', 'venue', 'status')
 
 
