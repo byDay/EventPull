@@ -51,6 +51,13 @@ class WPDataHelper(object):
 
 	@staticmethod
 	def create_wp_event(event):
+
+		existing_event_obj = DataHelper.get_event(event)
+		if existing_event_obj:
+			error_message = 'Event already exist : {event}'.format(event=event)
+			print error_message
+			return error_message
+
 		if event['tags'].get('tags'):
 			tags = event['tags'].get('tags')
 			tag_ids = []
@@ -98,8 +105,9 @@ class WPDataHelper(object):
 		if events_request.status_code == 201:
 			return events_request.json()
 		else:
-			print 'Error occured while creating WP events : {event_json}'.format(event_json=event_json)
-			return None
+			error_message = 'Error occured while creating WP events : {event_json}'.format(event_json=event_json)
+			print error_message
+			return error_message
 
 	"""
 		category = {"name" : "Office Party"}
@@ -166,7 +174,11 @@ class DataHelper(object):
 
 	@staticmethod
 	def get_event(event):
-		pass
+		try:
+			event_obj = models.AtlByDayEvent.objects.get(title=event['name'], start_date=event['event_start_time'])
+			return event_obj
+		except:
+			return None
 
 	@staticmethod
 	def get_tag(tag):

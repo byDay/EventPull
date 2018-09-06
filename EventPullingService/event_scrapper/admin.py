@@ -109,6 +109,18 @@ class ScrapingEventLogsAdmin(admin.ModelAdmin):
 
     download_logs_as_csv.short_description = 'Download event scraping event information as CSV file.'
 
+@admin.register(models.AtlPullEventLogs)
+class AtlPullEventLogsAdmin(admin.ModelAdmin):
+    list_display = ('status', 'start_time', 'end_time', 'description')
+    list_filter = ('status')
+    search_fields = ('status')
+    actions = ['download_logs_as_csv']
+    
+    def download_logs_as_csv(self, request, queryset):
+        return None
+
+    download_logs_as_csv.short_description = 'Download event scraping event information as CSV file.'
+
 
 @admin.register(models.AtlByDayOrganizer)
 class AtlByDayOrganizerAdmin(admin.ModelAdmin):

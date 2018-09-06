@@ -21,15 +21,12 @@ from event_scrapper import tasks
 tasks.process_venue_scrapping(1)
 
 
-l=[]
+from event_scrapper import models
+event_ids = models.AtlByDayEvent.objects.filter(venue_id__in=[600,601,602,603,604]).values_list('event_id', flat=True)
 url = 'https://atlbyday.com/wp-json/tribe/events/v1/events/{id}'
 TOKEN = "Basic RXZlbnRQdWxsOldRZlJycHRkTHlsa0U1dzI="
 HEADERS = {
 	"Authorization" : TOKEN,
 	"Content-Type" : "application/json"
 }
-for i in l:
-	xx = url
-	xx = xx.format(id=l)
-	r = requests.delete(xx, headers=HEADERS)
-	print r.status_code
+for i in event_ids:xx = url;xx = xx.format(id=i);r = requests.delete(xx, headers=HEADERS);print r.status_code
