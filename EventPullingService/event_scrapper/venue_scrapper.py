@@ -1,5 +1,6 @@
 import re
 import sys
+import json
 import requests
 import calendar
 import datetime
@@ -27,6 +28,11 @@ class VenueScrapper(object):
 		self.url_config = venue.url_config
 		self.scraping_config = venue.scraping_config
 		self.venue_metadata = venue.venue_metadata
+
+	@property
+	def venue_city(self):
+		city = venue.venue_metadata.get('city')
+		return city
 
 	@property
 	def venue_url(self):
@@ -248,11 +254,26 @@ class EventScrapper(object):
 	def __init__(self, venue, event_scrap_type, event_contents):
 		self.venue = venue
 		self.session = None
+		self.tag_category_config = None
 		self.event_scrap_type = event_scrap_type
 		self.event_soup_object_map = {}
 		self.scraping_config = venue.scraping_config
 		self.event_contents = event_contents
 
+	@property
+	def venue_city(self):
+		city = self.venue.venue_metadata.get('city')
+		return city
+
+	def get_tag_category_config(self):
+		from event_scrapper import models
+		if self.tag_category_config:
+			return self.tag_category_config
+		else:
+			config_obj = models.Config.objects.get(name='category_and_tagging')
+			self.tag_category_config = config_obj.config
+			return config_obj.config
+	
 	def get_ascii_string(self, string):
 		if string:
 			return ''.join([i if ord(i) < 128 else ' ' for i in string])
@@ -405,13 +426,40 @@ class EventScrapper(object):
 			return self.clean_string_from_spaces(event_attr_value)
 		return None
 
-	def get_tags(self, event_object):
-		description = event_object['description']
-		if not description:
-			description = ''
-		tags = keywords.keywords(event_object['description'] if event_object['description'] else '')
-		tags = ', '.join([str(x) for x in tags.split('\n')])
-		return {'tags' : tags}
+	def get_tags_and_category(self, event_object):
+		tag_config = self.get_tag_category_config()
+		default_tag_category = tag_config['default']
+		tag_config.pop('default')
+		search_space_text = event_object['description']
+		category = None
+		tags = None
+
+		for config_key, config_data in tag_config.iteritems():
+			search_string_list = config_data['to_find']
+			tags_to_add = config_data['to_add']
+			#Check if to find tags words exist in Event Description
+			for word in search_string_list:
+				if word in search_space_text:
+					category = config_data['category_id']
+					finding = word
+					tags = self.get_tags_for_category(tags_to_add, {'city' : self.venue_city,  'finding' : finding})
+
+		#If no category Found, set default
+		if not category:
+			category = default_tag_category['category_id']
+			tags_to_add = default_tag_category['to_add']
+			finding = None
+			tags = self.get_tags_for_category(tags_to_add, {'city' : self.venue_city,  'finding' : finding})
+
+		tag_config['default'] = default_tag_category
+		return category, tags
+
+	def get_tags_for_category(self, tags_to_add, category_data):
+		tag_list = []
+		for tag in tags_to_add:
+			tag = tag.format(city=category_data['city'], finding=category_data['finding'])
+			tag_list.append(tag)
+		return {'tags' : tag_list}
 
 	def get_summarize(self, event_object):
 		description = event_object['description']
@@ -432,7 +480,7 @@ class EventScrapper(object):
 				event_object['venue'] = self.venue.id
 				event_object['event_url'] = scrap_url
 				event_object['event_metadata'] = self.get_summarize(event_object)
-				event_object['tags'] = self.get_tags(event_object)
+				event_object['category'], event_object['tags'] = self.get_tags_and_category(event_object)
 				event_obj_list.append(event_object)
 		if self.event_scrap_type == 'HTML':
 			for event in self.event_contents:
@@ -444,7 +492,7 @@ class EventScrapper(object):
 				event_object['venue'] = self.venue.id
 				event_object['event_url'] = scrap_url
 				event_object['event_metadata'] = self.get_summarize(event_object)
-				event_object['tags'] = self.get_tags(event_object)
+				event_object['category'], event_object['tags'] = self.get_tags_and_category(event_object)
 				event_obj_list.append(event_object)
 		
 		return event_obj_list
