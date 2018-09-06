@@ -64,6 +64,20 @@ class ScrapingEventLogs(TimeStampedModel):
 	description = JSONField(null=True, blank=True)
 
 
+class AtlPullEventLogs(TimeStampedModel):
+
+	status_choices = Choices(
+		(0, 'In Progress'),
+		(1, 'Success'),
+		(2, 'Failed'),
+	)
+	
+	status = models.IntegerField(choices=status_choices, null=False)
+	start_time = models.DateTimeField(null=True)
+	end_time = models.DateTimeField(null=True)
+	description = JSONField(null=True, blank=True)
+
+
 class AtlByDayVenue(TimeStampedModel):
 	venue_id = models.IntegerField(null=True, blank=True)
 	author = models.CharField(max_length=10000, null=True, blank=True)
