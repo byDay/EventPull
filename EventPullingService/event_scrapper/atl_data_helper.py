@@ -52,8 +52,17 @@ class WPDataHelper(object):
 	@staticmethod
 	def create_wp_event(event):
 		if event['tags'].get('tags'):
-			tags = event['tags'].get('tags').split(',')
-			event['tags'] = tags
+			tags = event['tags'].get('tags')
+			tag_ids = []
+			for tag in tags:
+				tag_json = DataHelper.get_tag(tag)
+				if tag_json:
+					tag_ids.append(tag_json['tag_id'])
+				else:
+					tag_json = WPDataHelper.create_wp_tag({"name" : tag})
+					if tag_json:
+						tag_ids.append(tag_json['id'])	
+			event['tags'] = tag_ids
 		
 		if event['organizer_name']:
 			organizer_json = DataHelper.get_organizer({"organizer" : event['organizer_name']})
@@ -74,7 +83,10 @@ class WPDataHelper(object):
 		if not event['event_start_time']:
 			event['event_start_time'] = event['start_date']
 
-		event['category'] = None
+		event['category'] = [event['category']]
+
+		if not event['description'] or len(event['description']) == 0:
+			event['description'] = event['name']
 		
 		event_json = {}
 		for key, value in WPDataHelper.EVENT_KEY_MAPPING.iteritems():
@@ -111,10 +123,17 @@ class WPDataHelper(object):
 		endpoint = 'tags/'
 		endpoint = WPDataHelper.BASE_URL + endpoint
 		tag_request = requests.post(endpoint, headers=WPDataHelper.HEADERS, data=json.dumps(tag))
-		if tag_request.status_code == 201:
-			return tag_request.json()
-		else:
-			print 'Error occured while creating WP tags : {tag}'.format(tag=tag)
+		try:
+			if tag_request.status_code == 201:
+				return tag_request.json()
+			elif tag_request.status_code == 409:
+				res_json = tag_request.json()['data']
+				res_json['id'] = tag_request.json()['data']['term_id']
+				return res_json
+			else:
+				print 'Error occured while creating WP tags : {tag}'.format(tag=tag)
+				return None
+		except:
 			return None
 
 	"""
@@ -151,7 +170,11 @@ class DataHelper(object):
 
 	@staticmethod
 	def get_tag(tag):
-		pass
+		try:
+			tag = models.AtlByDayTag.objects.get(name=tag)
+			return serializers.AtlByDayTagSerializer(tag).data
+		except:
+			return None
 
 	@staticmethod
 	def get_category(category):

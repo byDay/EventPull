@@ -58,49 +58,62 @@ def process_venue_scrapping(venue_id):
 @periodic_task(run_every=crontab(minute=0, hour=8))
 def pull_data_from_atlbyday_wordpress():
 
-	atl_fetcher_obj = AtlDataFetcher()
-	atl_data_helper_obj = DataHelper()
+	event_pull_log_obj = models.AtlPullEventLogs.objects.create(status=0, start_time=datetime.datetime.today())
 
-	category_messages = []
-	tag_messages = []
-	venue_messages = []
-	organizer_messages = []
-	event_messages = []
+	try:
+		atl_fetcher_obj = AtlDataFetcher()
+		atl_data_helper_obj = DataHelper()
 
-	# #Fetch All Tags
-	all_tags = atl_fetcher_obj.get_all_tags()
-	for tag in all_tags:
-		tag_message = atl_data_helper_obj.update_or_create_tags(tag)
-		if tag_message:
-			tag_messages.append(tag_message)
+		category_messages = []
+		tag_messages = []
+		venue_messages = []
+		organizer_messages = []
+		event_messages = []
 
-	# #Fetch All Category
-	all_category = atl_fetcher_obj.get_all_categories()
-	for category in all_category:
-		category_message = atl_data_helper_obj.update_or_create_category(category)
-		if category_message:
-			category_messages.append(category_message)
-	
-	# #Fetch All Venues
-	all_venus = atl_fetcher_obj.get_all_venues()
-	for venue in all_venus:
-		venue_message = atl_data_helper_obj.update_or_create_venue(venue)
-		if venue_message:
-			venue_messages.append(venue_message)
+		# #Fetch All Tags
+		all_tags = atl_fetcher_obj.get_all_tags()
+		for tag in all_tags:
+			tag_message = atl_data_helper_obj.update_or_create_tags(tag)
+			if tag_message:
+				tag_messages.append(tag_message)
 
-	# # #Fetch All Organizers
-	all_orgainzer = atl_fetcher_obj.get_all_organizer()
-	for organizer in all_orgainzer:
-		organizer_message = atl_data_helper_obj.update_or_create_organizer(organizer)
-		if organizer_message:
-			organizer_messages.append(organizer_message)
+		# #Fetch All Category
+		all_category = atl_fetcher_obj.get_all_categories()
+		for category in all_category:
+			category_message = atl_data_helper_obj.update_or_create_category(category)
+			if category_message:
+				category_messages.append(category_message)
+		
+		# #Fetch All Venues
+		all_venus = atl_fetcher_obj.get_all_venues()
+		for venue in all_venus:
+			venue_message = atl_data_helper_obj.update_or_create_venue(venue)
+			if venue_message:
+				venue_messages.append(venue_message)
 
-	# #Fetch All Events
-	all_events = atl_fetcher_obj.get_all_events()
-	for event in all_events:
-		event_message = atl_data_helper_obj.update_or_create_event(event)
-		if event_message:
-			event_messages.append(event_message)
+		# # #Fetch All Organizers
+		all_orgainzer = atl_fetcher_obj.get_all_organizer()
+		for organizer in all_orgainzer:
+			organizer_message = atl_data_helper_obj.update_or_create_organizer(organizer)
+			if organizer_message:
+				organizer_messages.append(organizer_message)
 
-	pull_data_result = {"event" : event_messages, "organizer" : organizer_messages, "venue" : venue_messages}
-	print pull_data_result
+		# #Fetch All Events
+		all_events = atl_fetcher_obj.get_all_events()
+		for event in all_events:
+			event_message = atl_data_helper_obj.update_or_create_event(event)
+			if event_message:
+				event_messages.append(event_message)
+
+		pull_data_result = {"event" : event_messages, "organizer" : organizer_messages, "venue" : venue_messages, "category_messages" : category_messages, "tag_messages" : tag_messages}
+		event_pull_log_obj.description = pull_data_result
+		event_pull_log_obj.end_time = datetime.datetime.today()
+		event_pull_log_obj.status = 1
+		event_pull_log_obj.save()
+	except Exception as e:
+		error_message = str(e)
+		event_pull_log_obj.description = {"error_message" : error_message}
+		event_pull_log_obj.description = pull_data_result
+		event_pull_log_obj.end_time = datetime.datetime.today()
+		event_pull_log_obj.status = 2
+		event_pull_log_obj.save()
