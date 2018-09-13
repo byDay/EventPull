@@ -9,24 +9,27 @@ from django.core.exceptions import ValidationError
 from import_export.admin import ImportExportModelAdmin
 from event_scrapper.tasks import process_venue_scrapping
 
+
 @admin.register(models.Venue)
 class VenueAdmin(ImportExportModelAdmin):
     list_display = ('id', 'name', 'is_active')
     list_filter = ('id', 'name', 'is_active')
     search_fields = ('id', 'name', 'is_active')
-    actions = ['download_as_csv', 'trigger_selected_venue_scrapping_next_month']
-    
+    actions = ['download_as_csv',
+               'trigger_selected_venue_scrapping_next_month']
+
     def download_as_csv(self, request, queryset):
         csv_file = open('venue.csv', 'wb')
         writer = csv.writer(csv_file)
         writer.writerow(["id", "name", "is_active", "url"])
 
         queryset = queryset.order_by('id')
-        
+
         for s in queryset:
-            writer.writerow([s.id, s.name, s.is_active, s.url_config['venue_url']])
+            writer.writerow([s.id, s.name, s.is_active,
+                             s.url_config['venue_url']])
         csv_file.close()
-        
+
         csv_file = open('venue.csv', 'r')
         response = HttpResponse(csv_file, content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename=venue.csv'
@@ -36,7 +39,8 @@ class VenueAdmin(ImportExportModelAdmin):
     def trigger_selected_venue_scrapping_next_month(self, request, queryset):
         for venue in queryset:
             process_venue_scrapping.delay(venue.id)
-        messages.info(request, "Venue Scrapping started. Please check Event Log for more info.")
+        messages.info(
+            request, "Venue Scrapping started. Please check Event Log for more info.")
         return None
         return None
 
@@ -46,9 +50,12 @@ class VenueAdmin(ImportExportModelAdmin):
 
 @admin.register(models.Event)
 class EventAdmin(ImportExportModelAdmin):
-    list_display = ('name', 'venue', 'start_date', 'start_time', 'end_date', 'end_time', 'event_tag', 'minimum_cost', 'category', 'summary', 'description')
-    list_filter = ('venue', 'start_date', 'event_start_time',  'end_date', 'event_end_time', 'tags', 'category')
-    search_fields = ('name', 'venue', 'start_date', 'event_start_time', 'end_date', 'event_end_time', 'tags', 'category')
+    list_display = ('name', 'venue', 'start_date', 'start_time', 'end_date',
+                    'end_time', 'event_tag', 'minimum_cost', 'category', 'summary', 'description')
+    list_filter = ('venue', 'start_date', 'event_start_time',
+                   'end_date', 'event_end_time', 'tags', 'category')
+    search_fields = ('name', 'venue', 'start_date', 'event_start_time',
+                     'end_date', 'event_end_time', 'tags', 'category')
     actions = ['download_as_csv']
 
     def start_time(self, obj):
@@ -70,18 +77,20 @@ class EventAdmin(ImportExportModelAdmin):
         if obj and obj.tags:
             return obj.tags['tags']
         return '-'
-    
+
     def download_as_csv(self, request, queryset):
         csv_file = open('event.csv', 'wb')
         writer = csv.writer(csv_file)
-        writer.writerow(["id", "event_id", "name", "venue", "description", "start_date", "event_start_time", "end_date", "event_end_time", "tags", "organizer_name"])
+        writer.writerow(["id", "event_id", "name", "venue", "description", "start_date",
+                         "event_start_time", "end_date", "event_end_time", "tags", "organizer_name"])
 
         queryset = queryset.order_by('id')
-        
+
         for s in queryset:
-            writer.writerow([s.id, s.name, s.venue, s.description, s.start_date, s.event_start_time, s.end_date, s.event_end_time, s.tags, s.organizer_name])
+            writer.writerow([s.id, s.name, s.venue, s.description, s.start_date,
+                             s.event_start_time, s.end_date, s.event_end_time, s.tags, s.organizer_name])
         csv_file.close()
-        
+
         csv_file = open('event.csv', 'r')
         response = HttpResponse(csv_file, content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename=event.csv'
@@ -97,25 +106,27 @@ class ConfigAdmin(admin.ModelAdmin):
     list_filter = ('name', 'config')
     search_fields = ('name', 'config')
 
+
 @admin.register(models.ScrapingEventLogs)
 class ScrapingEventLogsAdmin(admin.ModelAdmin):
     list_display = ('venue', 'status', 'start_time', 'end_time', 'description')
     list_filter = ('venue', 'status')
     search_fields = ('venue', 'status')
     actions = ['download_logs_as_csv']
-    
+
     def download_logs_as_csv(self, request, queryset):
         return None
 
     download_logs_as_csv.short_description = 'Download event scraping event information as CSV file.'
 
+
 @admin.register(models.AtlPullEventLogs)
 class AtlPullEventLogsAdmin(admin.ModelAdmin):
     list_display = ('status', 'start_time', 'end_time', 'description')
-    list_filter = ('status')
-    search_fields = ('status')
+    list_filter = ('status',)
+    search_fields = ('status',)
     actions = ['download_logs_as_csv']
-    
+
     def download_logs_as_csv(self, request, queryset):
         return None
 
@@ -124,9 +135,11 @@ class AtlPullEventLogsAdmin(admin.ModelAdmin):
 
 @admin.register(models.AtlByDayOrganizer)
 class AtlByDayOrganizerAdmin(admin.ModelAdmin):
-    list_display = ('organizer_id', 'organizer', 'slug', 'phone', 'url', 'status')
+    list_display = ('organizer_id', 'organizer',
+                    'slug', 'phone', 'url', 'status')
     list_filter = ('organizer', 'status')
-    search_fields = ('organizer_id', 'organizer', 'slug', 'phone', 'url', 'status')    
+    search_fields = ('organizer_id', 'organizer',
+                     'slug', 'phone', 'url', 'status')
 
 
 @admin.register(models.AtlByDayVenue)
@@ -138,9 +151,11 @@ class AtlByDayVenueAdmin(admin.ModelAdmin):
 
 @admin.register(models.AtlByDayEvent)
 class AtlByDayEventAdmin(admin.ModelAdmin):
-    list_display = ('event_id', 'title', 'start_date', 'end_date', 'cost', 'venue', 'status')
+    list_display = ('event_id', 'title', 'start_date',
+                    'end_date', 'cost', 'venue', 'status')
     list_filter = ('venue', 'status')
-    search_fields = ('event_id', 'title', 'start_date', 'end_date', 'cost', 'venue', 'status')
+    search_fields = ('event_id', 'title', 'start_date',
+                     'end_date', 'cost', 'venue', 'status')
 
 
 @admin.register(models.AtlByDayTag)

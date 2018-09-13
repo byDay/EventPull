@@ -10,18 +10,19 @@ from summa import summarizer
 from bs4 import BeautifulSoup
 
 if 'linux' in sys.platform:
-    dryscrape.start_xvfb()
+	dryscrape.start_xvfb()
+
 
 class VenueScrapper(object):
 
 	HEADERS = {
-			'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11', 
-			'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 
-			'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3', 
-			'Accept-Encoding': 'none', 
-			'Accept-Language': 'en-US,en;q=0.8', 
-			'Connection': 'keep-alive'
-		}
+		'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
+		'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+		'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
+		'Accept-Encoding': 'none',
+		'Accept-Language': 'en-US,en;q=0.8',
+		'Connection': 'keep-alive'
+	}
 
 	def __init__(self, venue):
 		self.venue = venue
@@ -60,54 +61,55 @@ class VenueScrapper(object):
 			return False
 
 	def add_one_month(self, t):
-	    """Return a `datetime.date` or `datetime.datetime` (as given) that is
-	    one month earlier.
-	    
-	    Note that the resultant day of the month might change if the following
-	    month has fewer days:
-	    
-	        >>> add_one_month(datetime.date(2010, 1, 31))
-	        datetime.date(2010, 2, 28)
-	    """
-	    import datetime
-	    one_day = datetime.timedelta(days=1)
-	    one_month_later = t + one_day
-	    while one_month_later.month == t.month:  # advance to start of next month
-	        one_month_later += one_day
-	    target_month = one_month_later.month
-	    while one_month_later.day < t.day:  # advance to appropriate day
-	        one_month_later += one_day
-	        if one_month_later.month != target_month:  # gone too far
-	            one_month_later -= one_day
-	            break
-	    return one_month_later
+		"""Return a `datetime.date` or `datetime.datetime` (as given) that is
+		one month earlier.
+
+		Note that the resultant day of the month might change if the following
+		month has fewer days:
+
+			>>> add_one_month(datetime.date(2010, 1, 31))
+			datetime.date(2010, 2, 28)
+		"""
+		import datetime
+		one_day = datetime.timedelta(days=1)
+		one_month_later = t + one_day
+		while one_month_later.month == t.month:  # advance to start of next month
+			one_month_later += one_day
+		target_month = one_month_later.month
+		while one_month_later.day < t.day:  # advance to appropriate day
+			one_month_later += one_day
+			if one_month_later.month != target_month:  # gone too far
+				one_month_later -= one_day
+				break
+		return one_month_later
 
 	def subtract_one_month(self, t):
-	    """Return a `datetime.date` or `datetime.datetime` (as given) that is
-	    one month later.
-	    
-	    Note that the resultant day of the month might change if the following
-	    month has fewer days:
-	    
-	        >>> subtract_one_month(datetime.date(2010, 3, 31))
-	        datetime.date(2010, 2, 28)
-	    """
-	    import datetime
-	    one_day = datetime.timedelta(days=1)
-	    one_month_earlier = t - one_day
-	    while one_month_earlier.month == t.month or one_month_earlier.day > t.day:
-	        one_month_earlier -= one_day
-	    return one_month_earlier
+		"""Return a `datetime.date` or `datetime.datetime` (as given) that is
+		one month later.
 
-	#This may return mutiple URL's if Venue Website is Paginated based
-	#If Paginated Website then Scrape all Url
-	#Retrur : [<list of url's>]
+		Note that the resultant day of the month might change if the following
+		month has fewer days:
+
+			>>> subtract_one_month(datetime.date(2010, 3, 31))
+			datetime.date(2010, 2, 28)
+		"""
+		import datetime
+		one_day = datetime.timedelta(days=1)
+		one_month_earlier = t - one_day
+		while one_month_earlier.month == t.month or one_month_earlier.day > t.day:
+			one_month_earlier -= one_day
+		return one_month_earlier
+
+	# This may return mutiple URL's if Venue Website is Paginated based
+	# If Paginated Website then Scrape all Url
+	# Retrur : [<list of url's>]
 	def get_current_month_scrapping_url(self):
 		urls = []
 		today_date = datetime.datetime.today().date()
 		today_date = self.add_one_month(today_date)
 		month_start_date = today_date.replace(day=1)
-		month_end_date = today_date.replace(day=calendar.monthrange(today_date.year, today_date.month)[1])
+		month_end_date = today_date.replace(
+			day=calendar.monthrange(today_date.year, today_date.month)[1])
 		venue_url = self.url_config['venue_url']
 		ext_params, url_params = None, None
 		if self.url_config and 'ext_params' in self.url_config:
@@ -149,7 +151,8 @@ class VenueScrapper(object):
 							selected_date = month_end_date
 						if 'range' in value and value['range'] == 'min':
 							selected_date = month_start_date
-						formated_value = selected_date.strftime(value['format'])
+						formated_value = selected_date.strftime(
+							value['format'])
 						param_value = key + '=' + str(formated_value)
 					if value['type'] == 'range':
 						param_value = str(key) + '=' + '{range_value}'
@@ -191,7 +194,8 @@ class VenueScrapper(object):
 		for attr in main_content_tag_config['attribute']:
 			for key, value in attr.iteritems():
 				filter_attributes[key] = value
-		main_content_tag = venue_soup_obj.find_all(main_content_tag_config['tag'], attrs=filter_attributes)
+		main_content_tag = venue_soup_obj.find_all(
+			main_content_tag_config['tag'], attrs=filter_attributes)
 		if main_content_tag and len(main_content_tag) > 0:
 			return main_content_tag[main_content_tag_config['index']]
 		return None
@@ -208,7 +212,8 @@ class VenueScrapper(object):
 			else:
 				for key, value in attr.iteritems():
 					filter_attributes[key] = value
-		event_content_tags = main_content_tag.find_all(event_metadata_tag_config['tag'], attrs=filter_attributes)
+		event_content_tags = main_content_tag.find_all(
+			event_metadata_tag_config['tag'], attrs=filter_attributes)
 		if event_content_tags and len(event_content_tags):
 			return event_content_tags
 		return None
@@ -222,18 +227,22 @@ class VenueScrapper(object):
 		5. Create Event Object by extracting data from Event Tags and Event Main Url.
 		6. Return the Event Object List.
 	"""
+
 	def scrape_venue(self):
 		scraping_urls = self.get_current_month_scrapping_url()
 		event_obj_list = []
 		for scrap_url in scraping_urls:
 			if self.is_venue_scraping_api_based:
 				event_objects_json = self.get_event_objects_from_api(scrap_url)
-				event_objs = EventScrapper(self.venue, 'API', event_objects_json).get_all_event_object()
+				event_objs = EventScrapper(
+					self.venue, 'API', event_objects_json).get_all_event_object()
 				event_obj_list = event_obj_list + event_objs
 			if self.is_venue_scraping_html_based:
 				main_content_tag = self.get_main_content_parent_tag(scrap_url)
-				event_content_tags = self.get_event_content_tags(main_content_tag)
-				event_objs = EventScrapper(self.venue, 'HTML', event_content_tags).get_all_event_object()
+				event_content_tags = self.get_event_content_tags(
+					main_content_tag)
+				event_objs = EventScrapper(
+					self.venue, 'HTML', event_content_tags).get_all_event_object()
 				event_obj_list = event_obj_list + event_objs
 		return event_obj_list
 
@@ -241,15 +250,16 @@ class VenueScrapper(object):
 class EventScrapper(object):
 
 	HEADERS = {
-			'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11', 
-			'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 
-			'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3', 
-			'Accept-Encoding': 'none', 
-			'Accept-Language': 'en-US,en;q=0.8', 
-			'Connection': 'keep-alive'
-		}
+		'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
+		'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+		'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
+		'Accept-Encoding': 'none',
+		'Accept-Language': 'en-US,en;q=0.8',
+		'Connection': 'keep-alive'
+	}
 
-	event_attributes = ['name','event_id','description','start_date','event_start_time','end_date','event_end_time','tags','is_all_day_event','venue','category','event_url','organizer_name','organizer_url','minimum_cost']
+	event_attributes = ['name', 'event_id', 'description', 'start_date', 'event_start_time', 'end_date', 'event_end_time',
+						'tags', 'is_all_day_event', 'venue', 'category', 'event_url', 'organizer_name', 'organizer_url', 'minimum_cost']
 
 	def __init__(self, venue, event_scrap_type, event_contents):
 		self.venue = venue
@@ -273,7 +283,7 @@ class EventScrapper(object):
 			config_obj = models.Config.objects.get(name='category_and_tagging')
 			self.tag_category_config = config_obj.config
 			return config_obj.config
-	
+
 	def get_ascii_string(self, string):
 		if string:
 			return ''.join([i if ord(i) < 128 else ' ' for i in string])
@@ -292,7 +302,8 @@ class EventScrapper(object):
 			if event_scrap_url in self.event_soup_object_map:
 				return self.event_soup_object_map[event_scrap_url]
 			else:
-				req = requests.post(event_scrap_url, headers=self.HEADERS, timeout=5)
+				req = requests.post(
+					event_scrap_url, headers=self.HEADERS, timeout=5)
 				response = req.text
 				if response and len(response) > 0:
 					response = req.text
@@ -317,7 +328,8 @@ class EventScrapper(object):
 			else:
 				for key, value in attr.iteritems():
 					filter_attributes[key] = value
-		event_url_tags = event_tag.find(event_url_config['tag'], attrs=filter_attributes)
+		event_url_tags = event_tag.find(
+			event_url_config['tag'], attrs=filter_attributes)
 		event_scrap_url = event_url_tags[event_url_config['attribute_key']]
 		if 'parent_url' in event_url_config:
 			event_scrap_url = event_url_config['parent_url'] + event_scrap_url
@@ -337,17 +349,21 @@ class EventScrapper(object):
 			if type(in_format) == list:
 				for i_format in in_format:
 					try:
-						date_object = datetime.datetime.strptime(date_string, i_format)
-						#Set Current Year
-						date_object = date_object.replace(year=datetime.datetime.today().date().year)
+						date_object = datetime.datetime.strptime(
+							date_string, i_format)
+						# Set Current Year
+						date_object = date_object.replace(
+							year=datetime.datetime.today().date().year)
 						formated_value = date_object.strftime(out_format)
 						return formated_value
 					except:
 						pass
 			else:
-				date_object = datetime.datetime.strptime(date_string, in_format)
-				#Set Current Year
-				date_object = date_object.replace(year=datetime.datetime.today().date().year)
+				date_object = datetime.datetime.strptime(
+					date_string, in_format)
+				# Set Current Year
+				date_object = date_object.replace(
+					year=datetime.datetime.today().date().year)
 				formated_value = date_object.strftime(out_format)
 				return formated_value
 		except:
@@ -365,31 +381,36 @@ class EventScrapper(object):
 			value = value.replace("\t", "")
 			value = value.replace("\r", "")
 			value = value.replace("\n", "")
-			value = re.sub(' +',' ',value)
+			value = re.sub(' +', ' ', value)
 			value = value.lstrip()
 			value = value.rstrip()
 		return value
 
 	def get_event_attribute_data(self, attribute_name, event_soup_object, event_json_object=None):
-		attribute_scraping_config = self.get_event_attribute_scrap_config(attribute_name)
+		attribute_scraping_config = self.get_event_attribute_scrap_config(
+			attribute_name)
 		if attribute_scraping_config and len(attribute_scraping_config.keys()) > 0:
 			filter_attributes = {}
 
-			#Inherit Attribute
+			# Inherit Attribute
 			if 'inherit_from' in attribute_scraping_config:
-				inherited_data_value = self.get_event_attribute_data(attribute_scraping_config['inherit_from'], event_soup_object, event_json_object=event_json_object)
+				inherited_data_value = self.get_event_attribute_data(
+					attribute_scraping_config['inherit_from'], event_soup_object, event_json_object=event_json_object)
 				if 'type' in attribute_scraping_config and attribute_scraping_config['type'] == 'date':
-					inherited_data_value = self.get_formatted_date(inherited_data_value, attribute_scraping_config['in_format'], attribute_scraping_config['out_format'])
+					inherited_data_value = self.get_formatted_date(
+						inherited_data_value, attribute_scraping_config['in_format'], attribute_scraping_config['out_format'])
 					return inherited_data_value
 
-			#Json Based Object
+			# Json Based Object
 			if event_json_object and 'is_json_based' in attribute_scraping_config:
-				value_from_json_object = self.get_value_from_json_object(attribute_scraping_config['key'], event_json_object)
+				value_from_json_object = self.get_value_from_json_object(
+					attribute_scraping_config['key'], event_json_object)
 				if 'type' in attribute_scraping_config and attribute_scraping_config['type'] == 'date':
-					value_from_json_object = self.get_formatted_date(value_from_json_object, attribute_scraping_config['in_format'], attribute_scraping_config['out_format'])
+					value_from_json_object = self.get_formatted_date(
+						value_from_json_object, attribute_scraping_config['in_format'], attribute_scraping_config['out_format'])
 				return value_from_json_object
 
-			#Attribute Filter
+			# Attribute Filter
 			for attr in attribute_scraping_config['attribute']:
 				if 'is_regex' in attr:
 					for key, value in attr.iteritems():
@@ -399,28 +420,34 @@ class EventScrapper(object):
 					for key, value in attr.iteritems():
 						filter_attributes[key] = value
 
-			#String based Filter
+			# String based Filter
 			string_filter = None
 			if 'string' in attribute_scraping_config:
-				string_filter = re.compile(attribute_scraping_config['string']['regex_str'])
-			
-			event_attr_tag = event_soup_object.find(attribute_scraping_config['tag'], string=string_filter, attrs=filter_attributes)
+				string_filter = re.compile(
+					attribute_scraping_config['string']['regex_str'])
+
+			event_attr_tag = event_soup_object.find(
+				attribute_scraping_config['tag'], string=string_filter, attrs=filter_attributes)
 			event_attr_value = None
 
 			if event_attr_tag:
-				#Look for Sibling
+				# Look for Sibling
 				if 'sibilings' in attribute_scraping_config:
-					event_attr_tag = event_attr_tag.find_next_siblings(attribute_scraping_config['sibilings']['tag'])
+					event_attr_tag = event_attr_tag.find_next_siblings(
+						attribute_scraping_config['sibilings']['tag'])
 					if event_attr_tag and len(event_attr_tag) > 0:
 						event_attr_tag = event_attr_tag[attribute_scraping_config['sibilings']['index']]
 				if 'tag_property' in attribute_scraping_config and attribute_scraping_config['tag_property']:
-					event_attr_value = getattr(event_attr_tag, attribute_scraping_config['tag_property'])
+					event_attr_value = getattr(
+						event_attr_tag, attribute_scraping_config['tag_property'])
 					if 'type' in attribute_scraping_config and attribute_scraping_config['type'] == 'date':
-						event_attr_value = self.get_formatted_date(event_attr_value, attribute_scraping_config['in_format'], attribute_scraping_config['out_format'])
+						event_attr_value = self.get_formatted_date(
+							event_attr_value, attribute_scraping_config['in_format'], attribute_scraping_config['out_format'])
 				if 'tag_key' in attribute_scraping_config and attribute_scraping_config['tag_key']:
 					event_attr_value = event_attr_tag[attribute_scraping_config['tag_key']]
 					if 'type' in attribute_scraping_config and attribute_scraping_config['type'] == 'date':
-						event_attr_value = self.get_formatted_date(event_attr_value, attribute_scraping_config['in_format'], attribute_scraping_config['out_format'])
+						event_attr_value = self.get_formatted_date(
+							event_attr_value, attribute_scraping_config['in_format'], attribute_scraping_config['out_format'])
 			event_attr_value = self.get_ascii_string(event_attr_value)
 
 			return self.clean_string_from_spaces(event_attr_value)
@@ -437,19 +464,21 @@ class EventScrapper(object):
 		for config_key, config_data in tag_config.iteritems():
 			search_string_list = config_data['to_find']
 			tags_to_add = config_data['to_add']
-			#Check if to find tags words exist in Event Description
+			# Check if to find tags words exist in Event Description
 			for word in search_string_list:
 				if word in search_space_text:
 					category = config_data['category_id']
 					finding = word
-					tags = self.get_tags_for_category(tags_to_add, {'city' : self.venue_city,  'finding' : finding})
+					tags = self.get_tags_for_category(
+						tags_to_add, {'city': self.venue_city,  'finding': finding})
 
-		#If no category Found, set default
+		# If no category Found, set default
 		if not category:
 			category = default_tag_category['category_id']
 			tags_to_add = default_tag_category['to_add']
 			finding = None
-			tags = self.get_tags_for_category(tags_to_add, {'city' : self.venue_city,  'finding' : finding})
+			tags = self.get_tags_for_category(
+				tags_to_add, {'city': self.venue_city,  'finding': finding})
 
 		tag_config['default'] = default_tag_category
 		return category, tags
@@ -457,16 +486,17 @@ class EventScrapper(object):
 	def get_tags_for_category(self, tags_to_add, category_data):
 		tag_list = []
 		for tag in tags_to_add:
-			tag = tag.format(city=category_data['city'], finding=category_data['finding'])
+			tag = tag.format(
+				city=category_data['city'], finding=category_data['finding'])
 			tag_list.append(tag)
-		return {'tags' : tag_list}
+		return {'tags': tag_list}
 
 	def get_summarize(self, event_object):
 		description = event_object['description']
 		if not description:
 			description = ''
 		summary = summarizer.summarize(description)
-		return {'summary' : summary}
+		return {'summary': summary}
 
 	def get_all_event_object(self):
 		event_obj_list = []
@@ -474,25 +504,33 @@ class EventScrapper(object):
 			for event in self.event_contents:
 				event_object = {}
 				scrap_url = self.get_event_scrap_url_from_json_object(event)
-				current_event_soup_object = self.get_event_soup_object(scrap_url)
+				current_event_soup_object = self.get_event_soup_object(
+					scrap_url)
 				for attribute in self.event_attributes:
-					event_object[attribute] = self.get_event_attribute_data(attribute, current_event_soup_object, event_json_object=event)
+					event_object[attribute] = self.get_event_attribute_data(
+						attribute, current_event_soup_object, event_json_object=event)
 				event_object['venue'] = self.venue.id
 				event_object['event_url'] = scrap_url
-				event_object['event_metadata'] = self.get_summarize(event_object)
-				event_object['category'], event_object['tags'] = self.get_tags_and_category(event_object)
+				event_object['event_metadata'] = self.get_summarize(
+					event_object)
+				event_object['category'], event_object['tags'] = self.get_tags_and_category(
+					event_object)
 				event_obj_list.append(event_object)
 		if self.event_scrap_type == 'HTML':
 			for event in self.event_contents:
 				event_object = {}
 				scrap_url = self.get_event_scrap_url_from_tag_object(event)
-				current_event_soup_object = self.get_event_soup_object(scrap_url)
+				current_event_soup_object = self.get_event_soup_object(
+					scrap_url)
 				for attribute in self.event_attributes:
-					event_object[attribute] = self.get_event_attribute_data(attribute, current_event_soup_object)
+					event_object[attribute] = self.get_event_attribute_data(
+						attribute, current_event_soup_object)
 				event_object['venue'] = self.venue.id
 				event_object['event_url'] = scrap_url
-				event_object['event_metadata'] = self.get_summarize(event_object)
-				event_object['category'], event_object['tags'] = self.get_tags_and_category(event_object)
+				event_object['event_metadata'] = self.get_summarize(
+					event_object)
+				event_object['category'], event_object['tags'] = self.get_tags_and_category(
+					event_object)
 				event_obj_list.append(event_object)
-		
+
 		return event_obj_list
