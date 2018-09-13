@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 from django.db import models
 from model_utils import Choices
 from django.db.models import signals
-from django.db.models.signals import post_save
 from model_utils.models import TimeStampedModel
 from django.contrib.postgres.fields import JSONField
 
@@ -172,7 +171,7 @@ class AtlByDayCategory(TimeStampedModel):
 
 
 """
-	Post Save Signals
+    Post Save Signals
 """
 
 
